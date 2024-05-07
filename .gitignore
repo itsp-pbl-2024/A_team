@@ -26,3 +26,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+__pycache__/test_module.cpython-312-pytest-8.2.0.pyc
+backend/__pycache__/server.cpython-312.pyc
