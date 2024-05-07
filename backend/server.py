@@ -22,9 +22,9 @@ def send():
     data = request.get_json()
     return f"User{data['id']} said '{data['message']}'."
 
-@app.route("/check", method=["GET"])
+@app.route("/check", methods=["GET"])
 def check():
-    #id=f()
+    #id=f(s
     return "id" + "is quiet"
 
 
