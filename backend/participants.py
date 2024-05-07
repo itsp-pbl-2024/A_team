@@ -1,7 +1,7 @@
 from participant import Participant
 
 
-class ParticipantList:
+class Participants:
     def __init__(self, num):
         self._participants = []
         for _ in range(num):
