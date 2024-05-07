@@ -3,6 +3,7 @@ from flask import request
 
 app = Flask(__name__)
 
+all_room = RoomList()
 
 @app.route("/")
 def hello():
