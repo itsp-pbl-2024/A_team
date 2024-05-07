@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 from roomlist import RoomList
+from message import Message
 
 app = Flask(__name__)
 
@@ -23,6 +24,9 @@ def register():
 @app.route("/send", methods=["POST"])
 def send():
     data = request.get_json()
+    room = all_room.get_room(data['room_id'])
+    message = Message(data)
+    room.add_message(message)
     return f"User{data['id']} said '{data['message']}'."
 
 
