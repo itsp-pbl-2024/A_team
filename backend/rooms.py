@@ -15,6 +15,7 @@ class Rooms:
         participants = Participants(user_num)
         room = Room(participants, room_id)
         self._rooms.append(room)
+        return room_id
 
     def get_room(self, room_id):
         for i in self._rooms:

@@ -17,6 +17,7 @@ def hello():
 @app.route("/register", methods=["POST"])
 def register():
     n = request.get_json()["n"]
+    room_id = all_room.create_room(n)
     return f"You are going to talk with {n} people."
 
 
