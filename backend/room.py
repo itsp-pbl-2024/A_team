@@ -34,6 +34,11 @@ class Room:
     # find alone boy during room
     def search_alone(self):
         total_length = defaultdict(int)
+
+        # set key
+        for user in self._participants.get_participants():
+            total_length[user.get_user_id()] = 0
+
         for message in self._messages:
             total_length[message.get_user_id()] += message.get_length()
         botti_id = 0
