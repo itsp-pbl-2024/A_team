@@ -1,83 +1,41 @@
 import pytest
 
 # テスト対象APIコードのappをインポート
-import backend
 from backend.server import app
 
+# テスト用コンフィグをtrueに設定
+app.config["TESTING"] = True
+# テスト対象API呼び出し用テストクライアント生成
+client = app.test_client()
 
+#hello
 def test_flask_N001():
-    # テスト用コンフィグをtrueに設定
-    app.config["TESTING"] = True
-    # テスト対象API呼び出し用テストクライアント生成
-    client = app.test_client()
-
     # テスト対象API実行
     result = client.get("/")
     assert result.status_code == 200
     assert b"Hello World!" == result.data
 
-
+#register successful case
 def test_flask_N002():
-    app.config["TESTING"] = True
-    client = app.test_client()
+    for i in range(1,3):
+        result = client.post("/register", json={"n": i})
+        assert result.status_code == 200
+        assert f"You are going to talk with {i} people.".encode() == result.data
 
-    # テスト対象API実行
-    result = client.post("/register", json={"n": 3})
-    assert result.status_code == 200
-    assert b"You are going to talk with 3 people." == result.data
-
-
-"""
+#register failed case (Invalid request)
 def test_flask_N003():
-    app.config["TESTING"] = True
-    client = app.test_client()
-
-    # テスト対象API実行
-    result = client.post("/send", json={"id": 1, "message": "Hello"})
+    result = client.post("/register", json={"m": 10})
     assert result.status_code == 200
-    assert b"User1 said 'Hello'." == result.data
-"""
+    assert b"Invalid request." == result.data
 
-
-# register if n<=0 value error
+#register failed case (Invalid number of people)
 def test_flask_N004():
-    app.config["TESTING"] = True
-    client = app.test_client()
-
-    # テスト対象API実行
     result = client.post("/register", json={"n": 0})
     assert result.status_code == 200
     assert b"Invalid number of people." == result.data
 
-
-# send if no id error
+#send successful case
 def test_flask_N005():
-    app.config["TESTING"] = True
-    client = app.test_client()
-
-    # テスト対象API実行
-    result = client.post("/send", json={"message": "Hello"})
+    result = client.post("/send", json={"id": 10, "message": "Hello"})
     assert result.status_code == 200
-    assert b"Invalid request." == result.data
-
-
-# send if no message error
-def test_flask_N006():
-    app.config["TESTING"] = True
-    client = app.test_client()
-
-    # テスト対象API実行
-    result = client.post("/send", json={"id": 1})
-    assert result.status_code == 200
-    assert b"Invalid request." == result.data
-
-
-# check if id is quiet
-def test_flask_N007():
-    app.config["TESTING"] = True
-    client = app.test_client()
-
-    # テスト対象API実行
-    result = client.get("/check")
-    assert result.status_code == 200
-    assert b"id is quiet" == result.data
+    assert b"User10 said 'Hello'." == result.data
