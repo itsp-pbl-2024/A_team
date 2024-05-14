@@ -12,7 +12,10 @@ def hello():
 # 参加者の人数をから受け取る
 @app.route("/register", methods=["POST"])
 def register():
-    n = request.get_json()["n"]
+    data = request.get_json()
+    if "n" not in data:
+        return "Invalid request."
+    n = data["n"]
     if n <= 0:
         return "Invalid number of people."
     return f"You are going to talk with {n} people."
