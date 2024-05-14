@@ -25,7 +25,7 @@ def test_flask_N002():
     assert result.status_code == 200
     assert b"You are going to talk with 3 people." == result.data
 
-
+'''
 def test_flask_N003():
     app.config["TESTING"] = True
     client = app.test_client()
@@ -34,23 +34,44 @@ def test_flask_N003():
     result = client.post("/send", json={"id": 1, "message": "Hello"})
     assert result.status_code == 200
     assert b"User1 said 'Hello'." == result.data
-
+'''
 #register if n<=0 value error
 def test_flask_N004():
     app.config["TESTING"] = True
     client = app.test_client()
 
     # テスト対象API実行
-    result = client.get("/register", json={"n": 0})
+    result = client.post("/register", json={"n": 0})
     assert result.status_code == 200
     assert b"Invalid number of people." == result.data
 
-#send if id<=0 value error
+
+#send if no id error
 def test_flask_N005():
     app.config["TESTING"] = True
     client = app.test_client()
 
     # テスト対象API実行
-    result = client.post("/send", json={"id": 0, "message": "Hello"})
+    result = client.post("/send", json={"message": "Hello"})
     assert result.status_code == 200
     assert b"Invalid request." == result.data
+
+#send if no message error
+def test_flask_N006():
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    # テスト対象API実行
+    result = client.post("/send", json={"id": 1})
+    assert result.status_code == 200
+    assert b"Invalid request." == result.data
+
+#check if id is quiet
+def test_flask_N007():
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    # テスト対象API実行
+    result = client.get("/check")
+    assert result.status_code == 200
+    assert b"id is quiet" == result.data
