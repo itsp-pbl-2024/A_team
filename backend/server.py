@@ -1,7 +1,11 @@
 from flask import Flask
 from flask import request
+from rooms import Rooms
+from message import Message
 
 app = Flask(__name__)
+
+all_room = Rooms()
 
 
 @app.route("/")
@@ -18,6 +22,8 @@ def register():
     n = data["n"]
     if n <= 0:
         return "Invalid number of people."
+    n = request.get_json()["n"]
+    room_id = all_room.create_room(n)
     return f"You are going to talk with {n} people."
 
 
@@ -27,6 +33,9 @@ def send():
     data = request.get_json()
     if "id" not in data or "message" not in data:
         return "Invalid request."
+    room = all_room.get_room(data["room_id"])
+    message = Message(data)
+    room.add_message(message)
     return f"User{data['id']} said '{data['message']}'."
 
 
