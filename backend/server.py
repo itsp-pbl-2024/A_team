@@ -7,6 +7,8 @@ app = Flask(__name__)
 
 all_room = Rooms()
 
+ROOM_ID_DEMO = 0
+
 
 @app.route("/")
 def hello():
@@ -23,7 +25,7 @@ def register():
     if n <= 0:
         return "Invalid number of people."
     n = request.get_json()["n"]
-    room_id = all_room.create_room(n)
+    ROOM_ID_DEMO = all_room.create_room(n)
     return f"You are going to talk with {n} people."
 
 
@@ -33,7 +35,7 @@ def send():
     data = request.get_json()
     if "id" not in data or "message" not in data:
         return "Invalid request."
-    room = all_room.get_room(data["room_id"])
+    room = all_room.get_room(ROOM_ID_DEMO)
     message = Message(data)
     room.add_message(message)
     return f"User{data['id']} said '{data['message']}'."
@@ -41,8 +43,9 @@ def send():
 
 @app.route("/check", methods=["GET"])
 def check():
-    # id=f()
-    return "id" + " is quiet"
+    room = all_room.get_room(ROOM_ID_DEMO)
+    quiet_id = room.search_alone()
+    return f"{quiet_id}" + " is quiet"
 
 
 if __name__ == "__main__":
