@@ -6,7 +6,7 @@ from message import Message
 
 def create_app():
     app = Flask(__name__)
-    app.config["all_room"] = Rooms()
+    all_room = Rooms()
     ROOM_ID_DEMO = 1
 
     @app.route("/")
@@ -23,7 +23,7 @@ def create_app():
         if n <= 0:
             return "Invalid number of people."
         n = request.get_json()["n"]
-        app.config["all_room"].create_room(n)
+        all_room.create_room(n)
         return f"You are going to talk with {n} people."
 
     # ユーザーIDとメッセージの内容を受け取る
@@ -32,14 +32,14 @@ def create_app():
         data = request.get_json()
         if "id" not in data or "message" not in data:
             return "Invalid request."
-        room = app.config["all_room"].get_room(ROOM_ID_DEMO)
+        room = all_room.get_room(ROOM_ID_DEMO)
         message = Message(data)
         room.add_message(message)
         return f"User{data['id']} said '{data['message']}'."
 
     @app.route("/check", methods=["GET"])
     def check():
-        room = app.config["all_room"].get_room(ROOM_ID_DEMO)
+        room = all_room.get_room(ROOM_ID_DEMO)
         quiet_id = room.search_alone().get_user_name()
         return f"{quiet_id}" + " is quiet"
 
