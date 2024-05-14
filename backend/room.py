@@ -18,7 +18,7 @@ class Room:
         return self._messages
 
     def get_participant(self, user_id):
-        for i in self._participants:
+        for i in self._participants.get_participants():
             if i.get_user_id() == user_id:
                 return i
 
