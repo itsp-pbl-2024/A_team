@@ -13,7 +13,7 @@ def hello():
 @app.route("/register", methods=["POST"])
 def register():
     n = request.get_json()["n"]
-    if n < 0:
+    if n <= 0:
         return "Invalid number of people."
     return f"You are going to talk with {n} people."
 
@@ -30,7 +30,7 @@ def send():
 @app.route("/check", methods=["GET"])
 def check():
     # id=f()
-    return "id" + "is quiet"
+    return "id" + " is quiet"
 
 
 if __name__ == "__main__":
