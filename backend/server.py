@@ -1,11 +1,11 @@
 from flask import Flask
 from flask import request
-from roomlist import RoomList
+from rooms import Rooms
 from message import Message
 
 app = Flask(__name__)
 
-all_room = RoomList()
+all_room = Rooms()
 
 
 @app.route("/")

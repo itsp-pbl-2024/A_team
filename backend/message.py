@@ -11,5 +11,5 @@ class Message:
     def get_length(self):
         return self._length
 
-    def get_id(self):
+    def get_user_id(self):
         return self._data["id"]

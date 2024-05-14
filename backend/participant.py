@@ -1,11 +1,11 @@
 class Participant:
 
-    def __init__(self, id, name):
-        self._id = id
-        self._name = name
+    def __init__(self, user_id, user_name):
+        self._user_id = user_id
+        self._user_name = user_name
 
-    def get_id(self):
-        return self._id
+    def get_user_id(self):
+        return self._user_id
 
-    def get_name(self):
-        return self._name
+    def get_user_name(self):
+        return self._user_name
