@@ -15,7 +15,7 @@ class RoomList:
         participants = Participants(num)
         room = Room(participants, id)
         self._rooms.append(room)
-    
+
     def get_room(self, id):
         for i in self._rooms:
             if i.get_id == id:

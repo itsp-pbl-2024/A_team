@@ -2,7 +2,7 @@ from participant import Participant
 
 
 class Participants:
-    
+
     def __init__(self, num):
         self._participants = []
         for _ in range(num):

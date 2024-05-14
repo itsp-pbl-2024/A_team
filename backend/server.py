@@ -24,7 +24,7 @@ def register():
 @app.route("/send", methods=["POST"])
 def send():
     data = request.get_json()
-    room = all_room.get_room(data['room_id'])
+    room = all_room.get_room(data["room_id"])
     message = Message(data)
     room.add_message(message)
     return f"User{data['id']} said '{data['message']}'."
