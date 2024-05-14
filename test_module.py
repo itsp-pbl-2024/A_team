@@ -1,6 +1,7 @@
 import pytest
 
 # テスト対象APIコードのappをインポート
+import backend
 from backend.server import app
 
 
@@ -25,7 +26,8 @@ def test_flask_N002():
     assert result.status_code == 200
     assert b"You are going to talk with 3 people." == result.data
 
-'''
+
+"""
 def test_flask_N003():
     app.config["TESTING"] = True
     client = app.test_client()
@@ -34,8 +36,10 @@ def test_flask_N003():
     result = client.post("/send", json={"id": 1, "message": "Hello"})
     assert result.status_code == 200
     assert b"User1 said 'Hello'." == result.data
-'''
-#register if n<=0 value error
+"""
+
+
+# register if n<=0 value error
 def test_flask_N004():
     app.config["TESTING"] = True
     client = app.test_client()
@@ -46,7 +50,7 @@ def test_flask_N004():
     assert b"Invalid number of people." == result.data
 
 
-#send if no id error
+# send if no id error
 def test_flask_N005():
     app.config["TESTING"] = True
     client = app.test_client()
@@ -56,7 +60,8 @@ def test_flask_N005():
     assert result.status_code == 200
     assert b"Invalid request." == result.data
 
-#send if no message error
+
+# send if no message error
 def test_flask_N006():
     app.config["TESTING"] = True
     client = app.test_client()
@@ -66,7 +71,8 @@ def test_flask_N006():
     assert result.status_code == 200
     assert b"Invalid request." == result.data
 
-#check if id is quiet
+
+# check if id is quiet
 def test_flask_N007():
     app.config["TESTING"] = True
     client = app.test_client()
