@@ -31,7 +31,17 @@ class Room:
     def get_id(self):
         return self._id
 
-    # TODO find alone boy during room
+    # find alone boy during room
     def search_alone(self):
-        participant = self.get_participant(0)
+        total_length = defaultdict(int)
+        for message in self._messages:
+            total_length[message.get_id()] += message.get_length()
+        botti_id = 0
+        min_length = 1 << 60
+        for user_id in total_length:
+            if total_length[user_id] < min_length:
+                botti_id = user_id
+                min_length = total_length[user_id]
+
+        participant = self.get_participant(botti_id)
         return participant
