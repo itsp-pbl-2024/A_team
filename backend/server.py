@@ -13,6 +13,8 @@ def hello():
 @app.route("/register", methods=["POST"])
 def register():
     n = request.get_json()["n"]
+    if n < 0:
+        return "Invalid number of people."
     return f"You are going to talk with {n} people."
 
 
@@ -20,6 +22,8 @@ def register():
 @app.route("/send", methods=["POST"])
 def send():
     data = request.get_json()
+    if "id" not in data or "message" not in data:
+        return "Invalid request."
     return f"User{data['id']} said '{data['message']}'."
 
 
