@@ -37,7 +37,7 @@ def test_flask_N003():
     app.config["TESTING"] = True
     # テスト対象API呼び出し用テストクライアント生成
     client = app.test_client()
-    result = client.post("/register", json={"n": 10})
+    result = client.post("/register", json={"m": 10})
     assert result.status_code == 200
     assert b"Invalid request." == result.data
 
