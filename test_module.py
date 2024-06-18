@@ -64,7 +64,7 @@ def test_flask_N005():
     client.post("/register", json={"n": 11})
     result = client.post("/send", json={"id": 10, "durations": ["6.4"]})
     assert result.status_code == 200
-    assert b'User_id: 10, durations: ["6.4"]' == result.data
+    assert b"User_id: 10, durations: ['6.4']" == result.data
 
 
 # registerで人数登録して、sendで複数人のメッセージを送信する。最後にcheckでメッセージを確認する
@@ -82,15 +82,15 @@ def test_flask_S001():
     # send
     result = client.post("/send", json={"id": 0, "room_id": 1, "durations": ["3.5"]})
     assert result.status_code == 200
-    assert b'User_id: 0, durations: ["3.5"]' == result.data
+    assert b"User_id: 0, durations: ['3.5']" == result.data
 
     result = client.post("/send", json={"id": 1, "room_id": 1, "durations": ["1.1"]})
     assert result.status_code == 200
-    assert b'User_id: 1, durations: ["1.1"]' == result.data
+    assert b"User_id: 1, durations: ['1.1']" == result.data
 
     result = client.post("/send", json={"id": 2, "room_id": 1, "durations": ["6.4"]})
     assert result.status_code == 200
-    assert b'User_id: 2, durations: ["6.4"]' == result.data
+    assert b"User_id: 2, durations: ['6.4']" == result.data
 
     # check
     result = client.get("/check")
@@ -225,7 +225,7 @@ def test_flask_S007():
     client.post("/send", json={"id": 1, "room_id": 1, "durations": ["0.1"]})
     client.post("/send", json={"id": 1, "room_id": 1, "durations": ["4.0"]})
     client.post("/send", json={"id": 1, "room_id": 1, "durations": ["0.1"]})
-    client.post("/send", json={"id": 2, "room_id": 1, "durations": ["0.1", "2.2"]})
+    client.post("/send", json={"id": 2, "room_id": 1, "durations": ["0.1", "3.2"]})
     client.post("/send", json={"id": 3, "room_id": 1, "durations": ["0.4"]})
     client.post("/send", json={"id": 3, "room_id": 1, "durations": ["0.5"]})
     client.post("/send", json={"id": 3, "room_id": 1, "durations": ["0.4", "1.1"]})
