@@ -8,9 +8,9 @@ send_blueprint = Blueprint("send", __name__)
 @send_blueprint.route("/send", methods=["POST"])
 def send():
     data = request.get_json()
-    if "id" not in data or "message" not in data:
+    if "id" not in data or "durations" not in data:
         return "Invalid request."
     room = current_app.config["ROOMS"].get_room(current_app.config["ROOM_ID_DEMO"])
     message = Message(data)
     room.add_message(message)
-    return f"User{data['id']} said '{data['message']}'."
+    return f"User_id: {data['id']}, durations: '{data['durations']}'"

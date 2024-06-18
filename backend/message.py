@@ -6,7 +6,10 @@ class Message:
 
     # estimate length of speaking
     def caluculate_voice_amount(self):
-        return len(self._data["message"])
+        v_length = 0
+        for i in self._data["durations"]:
+            v_length += float(i)
+        return v_length
 
     def get_length(self):
         return self._length
