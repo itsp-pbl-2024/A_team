@@ -14,7 +14,7 @@ prediction.label_timeline("speakerId")
     スピーカー0が話した時間帯の詳細。各要素について、.start, .end, .duration, .dataがある
 """
 
-sperker_num = 3
+sperker_num = 1
 
 config = SpeakerDiarizationConfig(
     max_speakers=sperker_num,
@@ -30,12 +30,20 @@ inference = StreamingInference(pipeline, mic)
 prediction = inference()
 
 
-url = "http://localhost:5000/send"
+url = "http://localhost:5000/register"
 headers = {"Content-Type": "application/json"}
+data = {"n": sperker_num}
+res = requests.post(url, data=json.dumps(data), headers=headers)
+
+url = "http://localhost:5000/send"
+
 for i in range(sperker_num):
+    durations = []
+    for statement in prediction.label_timeline("speaker" + str(i)):
+        durations.append(str(statement.end - statement.start))
     data = {
         "id": str(i),
-        "durations": str(prediction.label_timeline("speaker" + str(i))),
+        "durations": str(durations),
     }
     res = requests.post(url, data=json.dumps(data), headers=headers)
     print(res.text)
