@@ -13,4 +13,4 @@ def send():
     room = current_app.config["ROOMS"].get_room(current_app.config["ROOM_ID_DEMO"])
     message = Message(data)
     room.add_message(message)
-    return f"User_id: {data['id']}, durations: '{data['durations']}'"
+    return f"User_id: {data['id']}, durations: {data['durations']}"
