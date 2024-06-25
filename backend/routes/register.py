@@ -14,4 +14,4 @@ def register():
     n = request.get_json()["n"]
     all_room = current_app.config["ROOMS"]
     all_room.create_room(n)
-    return f"You are going to talk with {n} people."
+    return f"You are going to talk with {n} people." 
