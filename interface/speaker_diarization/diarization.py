@@ -6,6 +6,7 @@ from diart.sinks import RTTMWriter
 import os
 import requests
 import json
+import sys
 
 
 class MySpeakerDiarization:
@@ -23,7 +24,8 @@ class MySpeakerDiarization:
         pipeline = SpeakerDiarization(config)
         mic = MicrophoneAudioSource()
         inference = StreamingInference(pipeline, mic)
-        inference.attach_observers(RTTMWriter(mic.uri, "testtesttest"))
+        inference.attach_observers(RTTMWriter(mic.uri, "file.rttm"))
+        self.prediction = inference()
 
     def start(self):
         self.clear_file()
@@ -89,3 +91,12 @@ class MySpeakerDiarization:
             res = requests.get(url, headers=headers, json={"id": i})
             data[i] = float(res.text)  # TODO
         return data
+
+
+def run_diarization(speaker_num):
+    diarization_pipeline = MySpeakerDiarization(speaker_num=speaker_num)
+
+
+if __name__ == "__main__":
+    num_speakers = int(sys.argv[1])
+    run_diarization(num_speakers)

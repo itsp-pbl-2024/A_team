@@ -1,6 +1,10 @@
 import flet as ft
+import threading
+import subprocess
 from .chart import create_bar_chart, update_chart, reset_chart
 from speaker_diarization.diarization import MySpeakerDiarization
+
+diarization_pipeline = None
 
 
 def create_name_and_record_fields(
@@ -44,7 +48,6 @@ def create_centered_container(content_list):
 
 def main():
     def main_app(page: ft.Page):
-        diarization_pipeline = None
         page.title = "発言量計測アプリ"
         page.window_width = 700
         page.window_height = 500
@@ -98,8 +101,8 @@ def main():
                 else:
                     record_buttons[index].icon = ft.icons.MIC_OFF
                     record_buttons[index].icon_color = ft.colors.RED
-                    global diarization_pipeline
                     diarization_pipeline.register_id(name_fields[index].value)
+                    print(diarization_pipeline)
 
                 page.update()
 
@@ -119,6 +122,9 @@ def main():
                 )
             else:
                 num_speakers = int(speaker_count.value)
+                subprocess.Popen(
+                    ["python3", "speaker_diarization/diarization.py", str(num_speakers)]
+                )
                 name_and_record_fields = create_name_and_record_fields(
                     num_speakers,
                     name_fields,
@@ -134,8 +140,6 @@ def main():
                         + [start_button]
                     )
                 )
-            global diarization_pipeline
-            diarization_pipeline = MySpeakerDiarization(speaker_num=num_speakers)
             page.update()
 
         start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
