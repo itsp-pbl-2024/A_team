@@ -1,5 +1,4 @@
 import pytest
-import json
 
 # テスト対象APIコードのappをインポート
 from backend.server import create_app
@@ -289,19 +288,19 @@ def test_flask_GST001():
     # get_speaking_time
     result = client.get("/get_speaking_time", json={"id": 0})
     assert result.status_code == 200
-    assert json.dumps({"id": 0, "duration": 3.0}) == json.dumps(result.data)
+    assert (result.data)['id'] == 0 and (result.data)['duration'] == 3.0
     result = client.get("/get_speaking_time", json={"id": 1})
     assert result.status_code == 200
-    assert json.dumps({"id": 1, "duration": 2.0}) == json.dumps(result.data)
+    assert (result.data)['id'] == 1 and (result.data)['duration'] == 2.0
     result = client.get("/get_speaking_time", json={"id": 2})
     assert result.status_code == 200
-    assert json.dumps({"id": 2, "duration": 4.0}) == json.dumps(result.data)
+    assert (result.data)['id'] == 2 and (result.data)['duration'] == 4.0
     result = client.get("/get_speaking_time", json={"id": 3})
     assert result.status_code == 200
-    assert json.dumps({"id": 3, "duration": 5.0}) == json.dumps(result.data)
+    assert (result.data)['id'] == 3 and (result.data)['duration'] == 5.0
     result = client.get("/get_speaking_time", json={"id": 4})
     assert result.status_code == 200
-    assert json.dumps({"id": 4, "duration": 6.0}) == json.dumps(result.data)
+    assert (result.data)['id'] == 4 and (result.data)['duration'] == 6.0
 
 
 def test_flask_GST002():
