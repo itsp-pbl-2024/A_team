@@ -14,7 +14,7 @@ prediction.label_timeline("speakerId")
     スピーカー0が話した時間帯の詳細。各要素について、.start, .end, .duration, .dataがある
 """
 
-sperker_num = 1
+sperker_num = 2
 
 config = SpeakerDiarizationConfig(
     max_speakers=sperker_num,
@@ -27,6 +27,7 @@ config = SpeakerDiarizationConfig(
 pipeline = SpeakerDiarization()
 mic = MicrophoneAudioSource()
 inference = StreamingInference(pipeline, mic)
+inference.attach_observers(RTTMWriter(mic.uri, "file.rttm"))
 prediction = inference()
 
 
