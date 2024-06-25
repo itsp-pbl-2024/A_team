@@ -266,3 +266,98 @@ def test_flask_S008():
     result = client.get("/check")
     assert result.status_code == 200
     assert b"0 is quiet" == result.data
+
+
+# get_speaking_time
+def test_flask_GST001():
+    app = create_app()
+    # テスト用コンフィグをtrueに設定
+    app.config["TESTING"] = True
+    # テスト対象API呼び出し用テストクライアント生成
+    client = app.test_client()
+    # register
+    client.post("/register", json={"n": 5})
+
+    # send
+    client.post("/send", json={"id": 0, "room_id": 1, "durations": ["3.0"]})
+    client.post("/send", json={"id": 1, "room_id": 1, "durations": ["2.0"]})
+    client.post("/send", json={"id": 2, "room_id": 1, "durations": ["4.0"]})
+    client.post("/send", json={"id": 3, "room_id": 1, "durations": ["5.0"]})
+    client.post("/send", json={"id": 4, "room_id": 1, "durations": ["6.0"]})
+
+    # get_speaking_time
+    result = client.get("/get_speaking_time", json={"id": 0})
+    assert result.status_code == 200
+    assert b"User0 talking time: 3.0" == result.data
+    result = client.get("/get_speaking_time", json={"id": 1})
+    assert result.status_code == 200
+    assert b"User1 talking time: 2.0" == result.data
+    result = client.get("/get_speaking_time", json={"id": 2})
+    assert result.status_code == 200
+    assert b"User2 talking time: 4.0" == result.data
+    result = client.get("/get_speaking_time", json={"id": 3})
+    assert result.status_code == 200
+    assert b"User3 talking time: 5.0" == result.data
+    result = client.get("/get_speaking_time", json={"id": 4})
+    assert result.status_code == 200
+    assert b"User4 talking time: 6.0" == result.data
+
+
+def test_flask_GST002():
+    app = create_app()
+    # テスト用コンフィグをtrueに設定
+    app.config["TESTING"] = True
+    # テスト対象API呼び出し用テストクライアント生成
+    client = app.test_client()
+    # register
+    client.post("/register", json={"n": 5})
+
+    # get_speaking_time
+    result = client.get("/get_speaking_time", json={"chrome": 0})
+    assert result.status_code == 200
+    assert b"Invalid request." == result.data
+
+
+def test_flask_GST003():
+    app = create_app()
+    # テスト用コンフィグをtrueに設定
+    app.config["TESTING"] = True
+    # テスト対象API呼び出し用テストクライアント生成
+    client = app.test_client()
+    # register
+    client.post("/register", json={"n": 5})
+
+    # get_speaking_time
+    result = client.get("/get_speaking_time", json={"id": "aaa"})
+    assert result.status_code == 200
+    assert b"Invalid request." == result.data
+
+
+def test_flask_GST004():
+    app = create_app()
+    # テスト用コンフィグをtrueに設定
+    app.config["TESTING"] = True
+    # テスト対象API呼び出し用テストクライアント生成
+    client = app.test_client()
+    # register
+    client.post("/register", json={"n": 5})
+
+    # get_speaking_time
+    result = client.get("/get_speaking_time", json={"id": -3})
+    assert result.status_code == 200
+    assert b"Invalid request." == result.data
+
+
+def test_flask_GST005():
+    app = create_app()
+    # テスト用コンフィグをtrueに設定
+    app.config["TESTING"] = True
+    # テスト対象API呼び出し用テストクライアント生成
+    client = app.test_client()
+    # register
+    client.post("/register", json={"n": 5})
+
+    # get_speaking_time
+    result = client.get("/get_speaking_time", json={"id": 6})
+    assert result.status_code == 200
+    assert b"Invalid request." == result.data

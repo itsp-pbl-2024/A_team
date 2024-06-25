@@ -3,6 +3,7 @@ from rooms import Rooms
 from routes.register import register_blueprint
 from routes.send import send_blueprint
 from routes.check import check_blueprint
+from routes.get_speaking_time import get_speaking_time_blueprint
 
 
 def create_app():
@@ -17,6 +18,8 @@ def create_app():
     app.register_blueprint(send_blueprint)
 
     app.register_blueprint(check_blueprint)
+
+    app.register_blueprint(get_speaking_time_blueprint)
 
     @app.route("/")
     def hello():
