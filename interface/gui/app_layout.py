@@ -37,7 +37,7 @@ def main():
     def main_app(page: ft.Page):
         page.title = "発言量計測アプリ"
         page.window_width = 700
-        page.window_height = 500
+        page.window_height = 600
 
         least_speaker_text = ft.Text(value="")
 
@@ -55,6 +55,17 @@ def main():
             names = [field.value for field in name_fields]
             chart = create_bar_chart(names)
             page.controls.clear()
+            page.add(ft.Container(padding=2))
+            page.add(
+                ft.Row(
+                    [
+                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
+                    ]
+                )
+            )
+            page.add(ft.Container(padding=10))
             page.add(chart)
             page.add(
                 ft.Row(
@@ -69,7 +80,15 @@ def main():
                     ]
                 )
             )
+
             page.update()
+
+        # 会議を終了し，画面を初期状態に戻す
+        def finish_meeting():
+            page.controls.clear()
+            least_speaker_text.value = ""
+            page.update()
+            page.add(create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button]))
 
         def toggle_recording(index):
             def handler(e):
