@@ -65,11 +65,19 @@ def main():
                         ft.ElevatedButton(
                             text="リセット", on_click=lambda e: reset_chart(chart, least_speaker_text, page)
                         ),
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                         least_speaker_text,
                     ]
                 )
             )
             page.update()
+
+        # 会議を終了し，画面を初期状態に戻す
+        def finish_meeting():
+            page.controls.clear()
+            least_speaker_text.value = ""
+            page.update()
+            page.add(create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button]))
 
         def toggle_recording(index):
             def handler(e):
