@@ -14,4 +14,4 @@ def get_speaking_time():
     if not is_int(id) or id < 0 or id >= len(room.get_participants().get_participants()):
         return "Invalid request."
     latests = room.get_latests()
-    return f"User{id} talking time: {latests[int(id)]}"
+    return {"id": id, "duration": latests[int(id)]}
