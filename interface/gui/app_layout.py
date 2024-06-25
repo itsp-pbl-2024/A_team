@@ -1,6 +1,7 @@
 import flet as ft
 import threading
 import subprocess
+import sys
 from .chart import create_bar_chart, update_chart, reset_chart
 from speaker_diarization.diarization import MySpeakerDiarization
 
@@ -120,7 +121,11 @@ def main():
             else:
                 num_speakers = int(speaker_count.value)
                 subprocess.Popen(
-                    ["python3", "speaker_diarization/diarization.py", str(num_speakers)]
+                    [
+                        sys.executable,
+                        "speaker_diarization/diarization.py",
+                        str(num_speakers),
+                    ]
                 )
                 name_and_record_fields = create_name_and_record_fields(
                     num_speakers,
