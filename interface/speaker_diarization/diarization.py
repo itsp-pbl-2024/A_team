@@ -10,6 +10,8 @@ import sys
 
 
 class MySpeakerDiarization:
+    id_name = defaultdict(str)
+
     def __init__(self, id_name=defaultdict(str), speaker_num=5):
         self.id_name = id_name
         self.speaker_num = speaker_num
@@ -30,10 +32,12 @@ class MySpeakerDiarization:
     def start(self):
         self.clear_file()
 
-    def associate_id2name(self, speaker_id, name):
-        self.id_name[speaker_id] = name
+    @classmethod
+    def associate_id2name(cls, speaker_id, name):
+        cls.id_name[speaker_id] = name
 
-    def register_id(self, name):
+    @classmethod
+    def register_id(cls, name):
         file_path = "file.rttm"
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -47,9 +51,7 @@ class MySpeakerDiarization:
 
         durations = list(durations.items())
         max_id = max(durations, key=lambda x: x[1])[0]
-        print(self.id_name)
-        self.associate_id2name(max_id, name)
-        print(self.id_name)
+        cls.associate_id2name(max_id, name)
 
     def clear_file(self):
         file_path = "file.rttm"

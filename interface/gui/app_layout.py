@@ -4,8 +4,6 @@ import subprocess
 from .chart import create_bar_chart, update_chart, reset_chart
 from speaker_diarization.diarization import MySpeakerDiarization
 
-diarization_pipeline = None
-
 
 def create_name_and_record_fields(
     num_speakers, name_fields, record_buttons, recording_states, toggle_recording
@@ -101,8 +99,7 @@ def main():
                 else:
                     record_buttons[index].icon = ft.icons.MIC_OFF
                     record_buttons[index].icon_color = ft.colors.RED
-                    diarization_pipeline.register_id(name_fields[index].value)
-                    print(diarization_pipeline)
+                    MySpeakerDiarization.register_id(name_fields[index].value)
 
                 page.update()
 
