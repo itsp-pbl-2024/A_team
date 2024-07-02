@@ -78,7 +78,7 @@ class MySpeakerDiarization:
         for i in range(cls.speaker_num):
             data = {
                 "id": i,
-                "durations": str(id_and_durations[str(i)]),
+                "durations": id_and_durations[str(i)],
             }
             res = requests.post(url, json=data, headers=headers)
         cls.clear_file()
