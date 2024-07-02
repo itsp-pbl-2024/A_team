@@ -83,12 +83,9 @@ def main():
 
             page.update()
 
-        # 会議を終了し，画面を初期状態に戻す
+        # 会議を終了する(アプリを終了する)
         def finish_meeting():
-            page.controls.clear()
-            least_speaker_text.value = ""
-            page.update()
-            page.add(create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button]))
+            page.window_destroy()
 
         def toggle_recording(index):
             def handler(e):
