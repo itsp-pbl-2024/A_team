@@ -53,6 +53,9 @@ class MySpeakerDiarization:
         durations = list(durations.items())
         max_id = max(durations, key=lambda x: x[1])[0]
         cls.associate_id2name(max_id, name)
+        print("id_name: ", cls.id_name)
+        for key, value in cls.id_name.items():
+            print(key, value)
 
     @staticmethod
     def clear_file():
@@ -62,12 +65,8 @@ class MySpeakerDiarization:
 
     @classmethod
     def save_to_server(cls):
-        url = "http://localhost:5000/register"
+        url = "http://127.0.0.1:5000/send"
         headers = {"Content-Type": "application/json"}
-        data = {"n": cls.speaker_num}
-        res = requests.post(url, data=json.dumps(data), headers=headers)
-
-        url = "http://localhost:5000/send"
         file_path = "file.rttm"
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -85,11 +84,11 @@ class MySpeakerDiarization:
                 "id": str(i),
                 "durations": str(id_and_durations[str(i)]),
             }
-            res = requests.post(url, data=json.dumps(data), headers=headers)
+            res = requests.post(url, json=json.dumps(data), headers=headers)
         cls.clear_file()
 
     def fetch_from_server(self):
-        url = "http://localhost:5000/get_speaking_time"
+        url = "http://127.0.0.1:5000/get_speaking_time"
         headers = {"Content-Type": "application/json"}
         data = defaultdict(float)
         for i in range(self.speaker_num):
@@ -104,6 +103,14 @@ class MySpeakerDiarization:
     @classmethod
     def get_id_from_name(cls, name):
         return cls.id_name[name]
+
+    @staticmethod
+    def register_speaker_num(speaker_num):
+        url = "http://127.0.0.1:5000/register"
+        headers = {"Content-Type": "application/json"}
+        data = {"n": speaker_num}
+        res = requests.post(url, json=data)
+        print(res.status_code)
 
 
 def run_diarization(speaker_num):

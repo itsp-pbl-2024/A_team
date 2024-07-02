@@ -73,9 +73,15 @@ def main():
             page.add(
                 ft.Row(
                     [
-                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
-                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
-                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(
+                            text="タイマー開始", on_click=lambda e: finish_meeting()
+                        ),
+                        ft.ElevatedButton(
+                            text="メモ帳", on_click=lambda e: finish_meeting()
+                        ),
+                        ft.ElevatedButton(
+                            text="会議終了", on_click=lambda e: finish_meeting()
+                        ),
                     ]
                 )
             )
@@ -137,6 +143,7 @@ def main():
                 )
             else:
                 num_speakers = int(speaker_count.value)
+                MySpeakerDiarization.register_speaker_num(num_speakers)
                 subprocess.Popen(
                     [
                         sys.executable,

@@ -1,3 +1,6 @@
+import ast
+
+
 class Message:
 
     def __init__(self, data):
@@ -7,7 +10,7 @@ class Message:
     # estimate length of speaking
     def caluculate_voice_amount(self):
         v_length = 0
-        for i in self._data["durations"]:
+        for i in ast.literal_eval(self._data["durations"]):
             v_length += float(i)
         return v_length
 
