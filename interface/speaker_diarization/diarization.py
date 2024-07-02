@@ -53,7 +53,8 @@ class MySpeakerDiarization:
         max_id = max(durations, key=lambda x: x[1])[0]
         cls.associate_id2name(max_id, name)
 
-    def clear_file(self):
+    @staticmethod
+    def clear_file():
         file_path = "file.rttm"
         with open(file_path, "w", encoding="utf-8") as f:
             f.write("")
