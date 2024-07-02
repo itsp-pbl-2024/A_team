@@ -153,6 +153,7 @@ def main(page: ft.Page):
                     [ft.Text("話者の人数を選択してください:"), speaker_count]
                     + name_and_record_fields
                     + [start_button]
+                )
 
           page.update()
 
