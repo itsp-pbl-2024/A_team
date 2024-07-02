@@ -1,5 +1,7 @@
 import flet as ft
 import random
+import requests
+import json
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
@@ -35,11 +37,16 @@ def create_bar_chart(names):
         left_axis=ft.ChartAxis(labels_size=40, title=ft.Text("発言量"), title_size=40),
         bottom_axis=ft.ChartAxis(
             labels=[
-                ft.ChartAxisLabel(value=j, label=ft.Container(ft.Text(names[j]), padding=10)) for j in range(len(names))
+                ft.ChartAxisLabel(
+                    value=j, label=ft.Container(ft.Text(names[j]), padding=10)
+                )
+                for j in range(len(names))
             ],
             labels_size=40,
         ),
-        horizontal_grid_lines=ft.ChartGridLines(color=ft.colors.GREY_300, width=1, dash_pattern=[3, 3]),
+        horizontal_grid_lines=ft.ChartGridLines(
+            color=ft.colors.GREY_300, width=1, dash_pattern=[3, 3]
+        ),
         tooltip_bgcolor=ft.colors.with_opacity(0.5, ft.colors.GREY_300),
         max_y=100,
         interactive=True,
@@ -48,16 +55,17 @@ def create_bar_chart(names):
 
 
 def update_chart(chart, least_speaker_text, page):
-    import requests
-    import json
-
+    MySpeakerDiarization.save_to_server()
     # APIに接続するための情報
     API_Endpoint = "http://127.0.0.1:5000/get_speaking_time"
 
     total_speech = 0
     speech_amounts = []
-    for i, group in enumerate(chart.bar_groups):
-        body = {"id": i}
+    for i, bar in enumerate(chart.bar_groups):
+        current_name = bar.bar_rods[0].tooltip
+        current_id = MySpeakerDiarization.get_id_from_name(current_name)
+        current_id = int(current_id.split("r")[1])
+        body = {"id": current_id}
         response = requests.get(API_Endpoint, json=body)
 
         if response.status_code == 200:
@@ -77,7 +85,9 @@ def update_chart(chart, least_speaker_text, page):
             min_value = percentage
             min_index = i
 
-    least_speaker_text.value = f"発言量が一番少ないのは{chart.bar_groups[min_index].bar_rods[0].tooltip}です"
+    least_speaker_text.value = (
+        f"発言量が一番少ないのは{chart.bar_groups[min_index].bar_rods[0].tooltip}です"
+    )
     page.update()
 
 

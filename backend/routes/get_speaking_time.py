@@ -11,7 +11,11 @@ def get_speaking_time():
         return "Invalid request."
     room = current_app.config["ROOMS"].get_room(current_app.config["ROOM_ID_DEMO"])
     id = data["id"]
-    if not is_int(id) or id < 0 or id >= len(room.get_participants().get_participants()):
+    if (
+        not is_int(id)
+        or id < 0
+        or id >= len(room.get_participants().get_participants())
+    ):
         return "Invalid request."
     latests = room.get_latests()
     return jsonify({"id": id, "duration": latests[int(id)]})

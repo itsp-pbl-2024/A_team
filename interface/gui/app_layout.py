@@ -96,6 +96,7 @@ def main():
             page.add(
                 ft.Row(
                     [
+
                         timer_button,
                         time_input,
                         ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
@@ -234,6 +235,7 @@ def main():
                 page.add(centered_container)
             else:
                 num_speakers = int(speaker_count.value)
+                MySpeakerDiarization.register_speaker_num(num_speakers)
                 subprocess.Popen(
                     [
                         sys.executable,
