@@ -15,7 +15,6 @@ class MySpeakerDiarization:
 
     def __init__(self, id_name=defaultdict(str), speaker_num=5):
         self.id_name = id_name
-        self.speaker_num = speaker_num
         config = SpeakerDiarizationConfig(
             max_speakers=speaker_num,
             step=0.5,
@@ -53,9 +52,6 @@ class MySpeakerDiarization:
         durations = list(durations.items())
         max_id = max(durations, key=lambda x: x[1])[0]
         cls.associate_id2name(max_id, name)
-        print("id_name: ", cls.id_name)
-        for key, value in cls.id_name.items():
-            print(key, value)
 
     @staticmethod
     def clear_file():
@@ -81,7 +77,7 @@ class MySpeakerDiarization:
 
         for i in range(cls.speaker_num):
             data = {
-                "id": str(i),
+                "id": i,
                 "durations": str(id_and_durations[str(i)]),
             }
             res = requests.post(url, json=json.dumps(data), headers=headers)
@@ -110,7 +106,6 @@ class MySpeakerDiarization:
         headers = {"Content-Type": "application/json"}
         data = {"n": speaker_num}
         res = requests.post(url, json=data)
-        print(res.status_code)
 
 
 def run_diarization(speaker_num):

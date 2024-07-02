@@ -62,23 +62,19 @@ def update_chart(chart, least_speaker_text, page):
     total_speech = 0
     speech_amounts = []
     for i, bar in enumerate(chart.bar_groups):
-        print("bar.tooltip: ", bar.bar_rods[0].tooltip)
-        print(MySpeakerDiarization.get_id_from_name(bar.bar_rods[0].tooltip))
-        print(type(MySpeakerDiarization.get_id_from_name(bar.bar_rods[0].tooltip)))
-        body = {"id": MySpeakerDiarization.get_id_from_name(bar.bar_rods[0].tooltip)}
+        current_name = bar.bar_rods[0].tooltip
+        current_id = MySpeakerDiarization.get_id_from_name(current_name)
+        current_id = int(current_id.split("r")[1])
+        body = {"id": current_id}
         response = requests.get(API_Endpoint, json=body)
 
         if response.status_code == 200:
-            print()
-            print()
             speech_amount = response.json().get("duration", 0)
         else:
             speech_amount = 0  # エラーが発生した場合は発話量を0とする
 
         speech_amounts.append(speech_amount)
         total_speech += speech_amount
-        print(f"{bar.tooltip}の発言量: {speech_amount}")
-        print(f"id: {MySpeakerDiarization.get_id_from_name(bar.bar_rods[0].tooltip)}")
 
     min_value = float("inf")
     min_index = -1

@@ -47,4 +47,3 @@ for i in range(sperker_num):
         "durations": str(durations),
     }
     res = requests.post(url, data=json.dumps(data), headers=headers)
-    print(res.text)
