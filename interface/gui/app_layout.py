@@ -6,17 +6,13 @@ from .chart import create_bar_chart, update_chart, reset_chart
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
-def create_name_and_record_fields(
-    num_speakers, name_fields, record_buttons, recording_states, toggle_recording
-):
+def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
     name_fields.clear()
     record_buttons.clear()
     recording_states.clear()
     for i in range(num_speakers):
         name_field = ft.TextField(label=f"話者{i+1}の名前")
-        record_button = ft.IconButton(
-            icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40
-        )
+        record_button = ft.IconButton(icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40)
         record_button.on_click = toggle_recording(i)
         name_fields.append(name_field)
         record_buttons.append(record_button)
@@ -55,8 +51,7 @@ def main():
 
         speaker_count = ft.Dropdown(
             width=100,
-            options=[ft.dropdown.Option("-")]
-            + [ft.dropdown.Option(str(i)) for i in range(2, 6)],
+            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 6)],
             value="-",
         )
 
@@ -94,15 +89,11 @@ def main():
                     [
                         ft.ElevatedButton(
                             text="更新",
-                            on_click=lambda e: update_chart(
-                                chart, least_speaker_text, page
-                            ),
+                            on_click=lambda e: update_chart(chart, least_speaker_text, page),
                         ),
                         ft.ElevatedButton(
                             text="リセット",
-                            on_click=lambda e: reset_chart(
-                                chart, least_speaker_text, page
-                            ),
+                            on_click=lambda e: reset_chart(chart, least_speaker_text, page),
                         ),
                         least_speaker_text,
                     ]
@@ -200,10 +191,6 @@ def main():
         start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
         speaker_count.on_change = on_speaker_count_change
 
-        page.add(
-            create_centered_container(
-                [ft.Text("話者の人数を選択してください:"), speaker_count, start_button]
-            )
-        )
+        page.add(create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button]))
 
     ft.app(target=main_app)

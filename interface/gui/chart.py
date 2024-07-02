@@ -35,16 +35,11 @@ def create_bar_chart(names):
         left_axis=ft.ChartAxis(labels_size=40, title=ft.Text("発言量"), title_size=40),
         bottom_axis=ft.ChartAxis(
             labels=[
-                ft.ChartAxisLabel(
-                    value=j, label=ft.Container(ft.Text(names[j]), padding=10)
-                )
-                for j in range(len(names))
+                ft.ChartAxisLabel(value=j, label=ft.Container(ft.Text(names[j]), padding=10)) for j in range(len(names))
             ],
             labels_size=40,
         ),
-        horizontal_grid_lines=ft.ChartGridLines(
-            color=ft.colors.GREY_300, width=1, dash_pattern=[3, 3]
-        ),
+        horizontal_grid_lines=ft.ChartGridLines(color=ft.colors.GREY_300, width=1, dash_pattern=[3, 3]),
         tooltip_bgcolor=ft.colors.with_opacity(0.5, ft.colors.GREY_300),
         max_y=50,
         interactive=True,
@@ -82,9 +77,7 @@ def update_chart(chart, least_speaker_text, page):
             min_value = percentage
             min_index = i
 
-    least_speaker_text.value = (
-        f"発言量が一番少ないのは{chart.bar_groups[min_index].bar_rods[0].tooltip}です"
-    )
+    least_speaker_text.value = f"発言量が一番少ないのは{chart.bar_groups[min_index].bar_rods[0].tooltip}です"
     page.update()
 
 
