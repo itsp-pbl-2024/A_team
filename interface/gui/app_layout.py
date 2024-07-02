@@ -3,6 +3,8 @@ import threading
 import subprocess
 import sys
 from .chart import create_bar_chart, update_chart, reset_chart
+from flet_timer.flet_timer import Timer
+from datetime import timedelta, datetime
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
@@ -52,6 +54,7 @@ def main():
         page.window_height = 600
 
         least_speaker_text = ft.Text(value="")
+        alert_timer = ft.Text(value="", color="red", size=20)
 
         speaker_count = ft.Dropdown(
             width=100,
@@ -64,6 +67,9 @@ def main():
         record_buttons = []
         recording_states = []
 
+        time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
+        timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
+
         def start_recording(e):
             MySpeakerDiarization.clear_file()
             names = [field.value for field in name_fields]
@@ -73,11 +79,15 @@ def main():
             page.add(
                 ft.Row(
                     [
+                        timer_button,
+                        time_input,
+                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
                         ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
                         memo_button,
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
-                    ]
-                )
+                    ],
+                ),
+                alert_timer
             )
             page.add(ft.Container(padding=10))
             page.add(
@@ -104,6 +114,7 @@ def main():
                                 chart, least_speaker_text, page
                             ),
                         ),
+                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
                         least_speaker_text,
                     ]
                 )
@@ -115,6 +126,43 @@ def main():
         def finish_meeting():
             page.window_destroy()
 
+        def refresh():
+            if time_input.value.total_seconds() == 0:
+               alert_timer.value = "Timer is expired"
+               reset_timer()
+               return
+            if timer_button.text == "タイマー停止":
+                time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
+                page.update()
+
+        timer = Timer(name="timer", interval_s=1, callback=refresh)
+
+        def start_timer():
+            req_time = datetime.strptime(str(time_input.value), "%H:%M:%S")
+            hour = req_time.strftime("%H")
+            minute = req_time.strftime("%M")
+            second = req_time.strftime("%S")
+            time_input.value = timedelta(seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second))
+            timer_button.text = "タイマー停止"
+            timer_button.on_click = lambda e: stop_timer()
+            alert_timer.value = ""
+            page.add(timer, time_input)
+            page.update()
+
+        def stop_timer():
+            timer_button.text = "タイマー再開"
+            timer_button.on_click = lambda e: restart_timer()
+            page.update()
+
+        def restart_timer():
+            timer_button.text = "タイマー停止"
+            timer_button.on_click = lambda e: stop_timer()
+            page.update()
+
+        def reset_timer():
+            timer_button.text = "タイマー開始"
+            timer_button.on_click = lambda e: start_timer()
+            time_input.value = timedelta(seconds=300)
         # メモ帳を開閉
         memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
 
