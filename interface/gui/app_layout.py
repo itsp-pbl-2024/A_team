@@ -74,13 +74,21 @@ def main():
                 ft.Row(
                     [
                         ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
-                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
+                        memo_button,
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ]
                 )
             )
             page.add(ft.Container(padding=10))
-            page.add(chart)
+            page.add(
+                ft.Row(
+                    [
+                        chart,
+                        ft.Container(padding=3),
+                        ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
+                    ]
+                )
+            )
             page.add(
                 ft.Row(
                     [
@@ -106,6 +114,34 @@ def main():
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
             page.window_destroy()
+
+        # メモ帳を開閉
+        memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
+
+        memo_text_field = ft.TextField(
+            multiline=True,
+            width=500,
+            height=300,
+            label="メモ帳",
+            hint_text="ここにテキストを入力してください...",
+            visible=False,
+        )
+
+        def open_memo():
+            page.window_width = 1200
+            memo_text_field.visible = True
+
+            memo_button.text = "メモ帳を閉じる"
+            memo_button.on_click = lambda e: close_memo()
+            page.update()
+
+        def close_memo():
+            page.window_width = 700
+            memo_text_field.visible = False
+
+            memo_button.text = "メモ帳を開く"
+            memo_button.on_click = lambda e: open_memo()
+            page.update()
 
         def toggle_recording(index):
             def handler(e):
