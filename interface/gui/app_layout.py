@@ -65,6 +65,7 @@ def main():
         recording_states = []
 
         def start_recording(e):
+            MySpeakerDiarization.clear_file()
             names = [field.value for field in name_fields]
             chart = create_bar_chart(names)
             page.controls.clear()
@@ -96,7 +97,7 @@ def main():
                 if recording_states[index]:
                     record_buttons[index].icon = ft.icons.MIC
                     record_buttons[index].icon_color = ft.colors.GREEN
-                    # diarization_pipeline.clear_file()
+                    MySpeakerDiarization.clear_file()
                 else:
                     record_buttons[index].icon = ft.icons.MIC_OFF
                     record_buttons[index].icon_color = ft.colors.RED
