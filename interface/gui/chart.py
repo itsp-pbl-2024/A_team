@@ -41,10 +41,23 @@ def create_bar_chart(names):
 
 
 def update_chart(chart, least_speaker_text, page):
+    import requests
+    import json
+
+    # APIに接続するための情報
+    API_Endpoint = "http://127.0.0.1:5000/get_speaking_time"
+
     total_speech = 0
     speech_amounts = []
-    for group in chart.bar_groups:
-        speech_amount = random.randint(0, 50)
+    for i, group in enumerate(chart.bar_groups):
+        body = {"id": i}
+        response = requests.get(API_Endpoint, json=body)
+
+        if response.status_code == 200:
+            speech_amount = response.json().get("duration", 0)
+        else:
+            speech_amount = 0  # エラーが発生した場合は発話量を0とする
+
         speech_amounts.append(speech_amount)
         total_speech += speech_amount
 
