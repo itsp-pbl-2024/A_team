@@ -1,23 +1,35 @@
 import flet as ft
+import threading
+import subprocess
+import sys
 from .chart import create_bar_chart, update_chart, reset_chart
 from flet_timer.flet_timer import Timer
 from datetime import timedelta, datetime
+from speaker_diarization.diarization import MySpeakerDiarization
 
 
-def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
+def create_name_and_record_fields(
+    num_speakers, name_fields, record_buttons, recording_states, toggle_recording
+):
     name_fields.clear()
     record_buttons.clear()
     recording_states.clear()
     for i in range(num_speakers):
         name_field = ft.TextField(label=f"話者{i+1}の名前")
-        record_button = ft.IconButton(icon=ft.icons.MIC, icon_color=ft.colors.RED, icon_size=40)
+        record_button = ft.IconButton(
+            icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40
+        )
         record_button.on_click = toggle_recording(i)
         name_fields.append(name_field)
         record_buttons.append(record_button)
         recording_states.append(False)
 
     name_and_record_fields = [
-        ft.Row([name_fields[i], record_buttons[i]], alignment=ft.MainAxisAlignment.CENTER, height=50)
+        ft.Row(
+            [name_fields[i], record_buttons[i]],
+            alignment=ft.MainAxisAlignment.CENTER,
+            height=50,
+        )
         for i in range(num_speakers)
     ]
     return name_and_record_fields
@@ -46,7 +58,8 @@ def main():
 
         speaker_count = ft.Dropdown(
             width=100,
-            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 6)],
+            options=[ft.dropdown.Option("-")]
+            + [ft.dropdown.Option(str(i)) for i in range(2, 6)],
             value="-",
         )
 
@@ -58,6 +71,7 @@ def main():
         timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
 
         def start_recording(e):
+            MySpeakerDiarization.clear_file()
             names = [field.value for field in name_fields]
             chart = create_bar_chart(names)
             page.controls.clear()
@@ -68,21 +82,37 @@ def main():
                         timer_button,
                         time_input,
                         ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
+                        memo_button,
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ],
                 ),
                 alert_timer
             )
             page.add(ft.Container(padding=10))
-            page.add(chart)
+            page.add(
+                ft.Row(
+                    [
+                        chart,
+                        ft.Container(padding=3),
+                        ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
+                    ]
+                )
+            )
             page.add(
                 ft.Row(
                     [
                         ft.ElevatedButton(
-                            text="更新", on_click=lambda e: update_chart(chart, least_speaker_text, page)
+                            text="更新",
+                            on_click=lambda e: update_chart(
+                                chart, least_speaker_text, page
+                            ),
                         ),
                         ft.ElevatedButton(
-                            text="リセット", on_click=lambda e: reset_chart(chart, least_speaker_text, page)
+                            text="リセット",
+                            on_click=lambda e: reset_chart(
+                                chart, least_speaker_text, page
+                            ),
                         ),
                         ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
                         least_speaker_text,
@@ -133,6 +163,32 @@ def main():
             timer_button.text = "タイマー開始"
             timer_button.on_click = lambda e: start_timer()
             time_input.value = timedelta(seconds=300)
+        # メモ帳を開閉
+        memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
+
+        memo_text_field = ft.TextField(
+            multiline=True,
+            width=500,
+            height=300,
+            label="メモ帳",
+            hint_text="ここにテキストを入力してください...",
+            visible=False,
+        )
+
+        def open_memo():
+            page.window_width = 1200
+            memo_text_field.visible = True
+
+            memo_button.text = "メモ帳を閉じる"
+            memo_button.on_click = lambda e: close_memo()
+            page.update()
+
+        def close_memo():
+            page.window_width = 700
+            memo_text_field.visible = False
+
+            memo_button.text = "メモ帳を開く"
+            memo_button.on_click = lambda e: open_memo()
             page.update()
 
         def toggle_recording(index):
@@ -141,9 +197,12 @@ def main():
                 if recording_states[index]:
                     record_buttons[index].icon = ft.icons.MIC
                     record_buttons[index].icon_color = ft.colors.GREEN
+                    MySpeakerDiarization.clear_file()
                 else:
                     record_buttons[index].icon = ft.icons.MIC_OFF
                     record_buttons[index].icon_color = ft.colors.RED
+                    MySpeakerDiarization.register_id(name_fields[index].value)
+
                 page.update()
 
             return handler
@@ -152,12 +211,29 @@ def main():
             if speaker_count.value == "-":
                 page.controls.clear()
                 page.add(
-                    create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button])
+                    create_centered_container(
+                        [
+                            ft.Text("話者の人数を選択してください:"),
+                            speaker_count,
+                            start_button,
+                        ]
+                    )
                 )
             else:
                 num_speakers = int(speaker_count.value)
+                subprocess.Popen(
+                    [
+                        sys.executable,
+                        "speaker_diarization/diarization.py",
+                        str(num_speakers),
+                    ]
+                )
                 name_and_record_fields = create_name_and_record_fields(
-                    num_speakers, name_fields, record_buttons, recording_states, toggle_recording
+                    num_speakers,
+                    name_fields,
+                    record_buttons,
+                    recording_states,
+                    toggle_recording,
                 )
                 page.controls.clear()
                 page.add(
@@ -172,6 +248,10 @@ def main():
         start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
         speaker_count.on_change = on_speaker_count_change
 
-        page.add(create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button]))
+        page.add(
+            create_centered_container(
+                [ft.Text("話者の人数を選択してください:"), speaker_count, start_button]
+            )
+        )
 
     ft.app(target=main_app)
