@@ -1,4 +1,5 @@
 import pytest
+import json
 
 # テスト対象APIコードのappをインポート
 from backend.server import create_app
@@ -288,19 +289,19 @@ def test_flask_GST001():
     # get_speaking_time
     result = client.get("/get_speaking_time", json={"id": 0})
     assert result.status_code == 200
-    assert b"User0 talking time: 3.0" == result.data
+    assert {'id': 0, 'duration': 3.0} == json.loads(result.data)
     result = client.get("/get_speaking_time", json={"id": 1})
     assert result.status_code == 200
-    assert b"User1 talking time: 2.0" == result.data
+    assert {'id': 1, 'duration': 2.0} == json.loads(result.data)
     result = client.get("/get_speaking_time", json={"id": 2})
     assert result.status_code == 200
-    assert b"User2 talking time: 4.0" == result.data
+    assert {'id': 2, 'duration': 4.0} == json.loads(result.data)
     result = client.get("/get_speaking_time", json={"id": 3})
     assert result.status_code == 200
-    assert b"User3 talking time: 5.0" == result.data
+    assert {'id': 3, 'duration': 5.0} == json.loads(result.data)
     result = client.get("/get_speaking_time", json={"id": 4})
     assert result.status_code == 200
-    assert b"User4 talking time: 6.0" == result.data
+    assert {'id': 4, 'duration': 6.0} == json.loads(result.data)
 
 
 def test_flask_GST002():

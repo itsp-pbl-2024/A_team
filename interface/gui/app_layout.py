@@ -45,10 +45,11 @@ def create_centered_container(content_list):
     )
 
 
+
 def main(page: ft.Page):
     page.title = "発言量計測アプリ"
     page.window_width = 700
-    page.window_height = 500
+    page.window_height = 600
 
     least_speaker_text = ft.Text(value="")
 
@@ -107,6 +108,19 @@ def main(page: ft.Page):
     def on_speaker_count_change(e):
         if speaker_count.value == "-":
             page.controls.clear()
+            page.add(ft.Container(padding=2))
+            page.add(
+                ft.Row(
+                    [
+                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
+                    ]
+                )
+            )
+            page.add(ft.Container(padding=10))
+            page.add(chart)
+
             page.add(
                 create_centered_container(
                     [
@@ -116,6 +130,7 @@ def main(page: ft.Page):
                     ]
                 )
             )
+
         else:
             num_speakers = int(speaker_count.value)
             subprocess.Popen(
@@ -138,6 +153,44 @@ def main(page: ft.Page):
                     [ft.Text("話者の人数を選択してください:"), speaker_count]
                     + name_and_record_fields
                     + [start_button]
+
+          page.update()
+
+      # 会議を終了する(アプリを終了する)
+      def finish_meeting():
+          page.window_destroy()
+
+      def toggle_recording(index):
+          def handler(e):
+              recording_states[index] = not recording_states[index]
+              if recording_states[index]:
+                  record_buttons[index].icon = ft.icons.MIC
+                  record_buttons[index].icon_color = ft.colors.GREEN
+              else:
+                  record_buttons[index].icon = ft.icons.MIC_OFF
+                  record_buttons[index].icon_color = ft.colors.RED
+              page.update()
+
+          return handler
+
+      def on_speaker_count_change(e):
+          if speaker_count.value == "-":
+              page.controls.clear()
+              page.add(
+                  create_centered_container([ft.Text("話者の人数を選択してください:"), speaker_count, start_button])
+              )
+          else:
+              num_speakers = int(speaker_count.value)
+              name_and_record_fields = create_name_and_record_fields(
+                  num_speakers, name_fields, record_buttons, recording_states, toggle_recording
+              )
+              page.controls.clear()
+              page.add(
+                  create_centered_container(
+                      [ft.Text("話者の人数を選択してください:"), speaker_count]
+                      + name_and_record_fields
+                      + [start_button]
+                  )
                 )
             )
         page.update()
