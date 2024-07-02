@@ -11,6 +11,7 @@ import sys
 
 class MySpeakerDiarization:
     id_name = defaultdict(str)
+    speaker_num = 5
 
     def __init__(self, id_name=defaultdict(str), speaker_num=5):
         self.id_name = id_name
@@ -59,10 +60,11 @@ class MySpeakerDiarization:
         with open(file_path, "w", encoding="utf-8") as f:
             f.write("")
 
-    def save_to_server(self):
+    @classmethod
+    def save_to_server(cls):
         url = "http://localhost:5000/register"
         headers = {"Content-Type": "application/json"}
-        data = {"n": len(self.speaker_num)}
+        data = {"n": cls.speaker_num}
         res = requests.post(url, data=json.dumps(data), headers=headers)
 
         url = "http://localhost:5000/send"
@@ -78,25 +80,30 @@ class MySpeakerDiarization:
                 speaker_id = data[7].split("r")[1]
                 id_and_durations[speaker_id].append(float(data[4]))
 
-        for i in range(len(self.speaker_num)):
+        for i in range(cls.speaker_num):
             data = {
                 "id": str(i),
                 "durations": str(id_and_durations[str(i)]),
             }
             res = requests.post(url, data=json.dumps(data), headers=headers)
-            print(res.text)
+        cls.clear_file()
 
     def fetch_from_server(self):
         url = "http://localhost:5000/get_speaking_time"
         headers = {"Content-Type": "application/json"}
         data = defaultdict(float)
-        for i in range(len(self.speaker_num)):
+        for i in range(self.speaker_num):
             res = requests.get(url, headers=headers, json={"id": i})
             data[i] = float(res.text)  # TODO
         return data
 
+    @classmethod
+    def set_speaker_num(cls, speaker_num):
+        cls.speaker_num = speaker_num
+
 
 def run_diarization(speaker_num):
+    MySpeakerDiarization.set_speaker_num(speaker_num)
     diarization_pipeline = MySpeakerDiarization(speaker_num=speaker_num)
 
 
