@@ -80,7 +80,7 @@ class MySpeakerDiarization:
                 "id": i,
                 "durations": str(id_and_durations[str(i)]),
             }
-            res = requests.post(url, json=json.dumps(data), headers=headers)
+            res = requests.post(url, json=data, headers=headers)
         cls.clear_file()
 
     def fetch_from_server(self):
