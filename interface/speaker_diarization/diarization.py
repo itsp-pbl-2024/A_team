@@ -35,7 +35,7 @@ class MySpeakerDiarization:
 
     @classmethod
     def associate_id2name(cls, speaker_id, name):
-        cls.id_name[speaker_id] = name
+        cls.id_name[name] = speaker_id
 
     @classmethod
     def register_id(cls, name):
@@ -100,6 +100,10 @@ class MySpeakerDiarization:
     @classmethod
     def set_speaker_num(cls, speaker_num):
         cls.speaker_num = speaker_num
+
+    @classmethod
+    def get_id_from_name(cls, name):
+        return cls.id_name[name]
 
 
 def run_diarization(speaker_num):
