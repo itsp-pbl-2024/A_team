@@ -1,5 +1,7 @@
 import flet as ft
 from .chart import create_bar_chart, update_chart, reset_chart
+from flet_timer.flet_timer import Timer
+from datetime import timedelta, datetime
 
 
 def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
@@ -51,6 +53,8 @@ def main():
         record_buttons = []
         recording_states = []
 
+        timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
+
         def start_recording(e):
             names = [field.value for field in name_fields]
             chart = create_bar_chart(names)
@@ -59,7 +63,7 @@ def main():
             page.add(
                 ft.Row(
                     [
-                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
+                        timer_button,
                         ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ]
@@ -86,6 +90,32 @@ def main():
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
             page.window_destroy()
+
+        def refresh():
+            if txt_time.value.total_seconds() == 0: return
+            minus = 0
+            if timer_button.text == "タイマー停止": minus = 1
+            txt_time.value = timedelta(seconds=txt_time.value.total_seconds()-minus)
+            page.update()
+        
+        txt_time = ft.Text(value=timedelta(seconds=10), weight="bold")
+        timer = Timer(name="timer", interval_s=1, callback=refresh)
+
+        def start_timer():
+            timer_button.text = "タイマー停止"
+            timer_button.on_click = lambda e: stop_timer()
+            page.add(timer, txt_time)
+            page.update()
+        
+        def stop_timer():
+            timer_button.text = "タイマー再開"
+            timer_button.on_click = lambda e: restart_timer()
+            page.update()
+        
+        def restart_timer():
+            timer_button.text = "タイマー停止"
+            timer_button.on_click = lambda e: stop_timer()
+            page.update()
 
         def toggle_recording(index):
             def handler(e):
