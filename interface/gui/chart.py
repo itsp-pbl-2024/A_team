@@ -41,7 +41,7 @@ def create_bar_chart(names):
         ),
         horizontal_grid_lines=ft.ChartGridLines(color=ft.colors.GREY_300, width=1, dash_pattern=[3, 3]),
         tooltip_bgcolor=ft.colors.with_opacity(0.5, ft.colors.GREY_300),
-        max_y=50,
+        max_y=100,
         interactive=True,
         expand=False,
     )
