@@ -42,6 +42,7 @@ def main():
         page.window_height = 600
 
         least_speaker_text = ft.Text(value="")
+        alert_timer = ft.Text(value="", color="red", size=20)
 
         speaker_count = ft.Dropdown(
             width=100,
@@ -53,6 +54,7 @@ def main():
         record_buttons = []
         recording_states = []
 
+        time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
         timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
 
         def start_recording(e):
@@ -64,10 +66,12 @@ def main():
                 ft.Row(
                     [
                         timer_button,
+                        time_input,
                         ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
-                    ]
-                )
+                    ],
+                ),
+                alert_timer
             )
             page.add(ft.Container(padding=10))
             page.add(chart)
@@ -80,6 +84,7 @@ def main():
                         ft.ElevatedButton(
                             text="リセット", on_click=lambda e: reset_chart(chart, least_speaker_text, page)
                         ),
+                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
                         least_speaker_text,
                     ]
                 )
@@ -92,29 +97,42 @@ def main():
             page.window_destroy()
 
         def refresh():
-            if txt_time.value.total_seconds() == 0: return
-            minus = 0
-            if timer_button.text == "タイマー停止": minus = 1
-            txt_time.value = timedelta(seconds=txt_time.value.total_seconds()-minus)
-            page.update()
-        
-        txt_time = ft.Text(value=timedelta(seconds=10), weight="bold")
+            if time_input.value.total_seconds() == 0:
+               alert_timer.value = "Timer is expired"
+               reset_timer()
+               return
+            if timer_button.text == "タイマー停止":
+                time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
+                page.update()
+
         timer = Timer(name="timer", interval_s=1, callback=refresh)
 
         def start_timer():
+            req_time = datetime.strptime(str(time_input.value), "%H:%M:%S")
+            hour = req_time.strftime("%H")
+            minute = req_time.strftime("%M")
+            second = req_time.strftime("%S")
+            time_input.value = timedelta(seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second))
             timer_button.text = "タイマー停止"
             timer_button.on_click = lambda e: stop_timer()
-            page.add(timer, txt_time)
+            alert_timer.value = ""
+            page.add(timer, time_input)
             page.update()
-        
+
         def stop_timer():
             timer_button.text = "タイマー再開"
             timer_button.on_click = lambda e: restart_timer()
             page.update()
-        
+
         def restart_timer():
             timer_button.text = "タイマー停止"
             timer_button.on_click = lambda e: stop_timer()
+            page.update()
+
+        def reset_timer():
+            timer_button.text = "タイマー開始"
+            timer_button.on_click = lambda e: start_timer()
+            time_input.value = timedelta(seconds=300)
             page.update()
 
         def toggle_recording(index):
