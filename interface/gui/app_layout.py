@@ -107,6 +107,7 @@ def main():
                     ],
                 ),
                 alert_timer,
+                error_message
             )
             page.add(ft.Container(padding=10))
             page.add(
@@ -145,6 +146,7 @@ def main():
             page.window_destroy()  # アプリを終了する
 
         def refresh():
+            if timer_button.text != "タイマー停止": return
             if time_input.value.total_seconds() == 0:
                 alert_timer.value = "Timer is expired"
                 reset_timer()
@@ -156,10 +158,16 @@ def main():
         timer = Timer(name="timer", interval_s=1, callback=refresh)
 
         def start_timer():
-            req_time = datetime.strptime(str(time_input.value), "%H:%M:%S")
-            hour = req_time.strftime("%H")
-            minute = req_time.strftime("%M")
-            second = req_time.strftime("%S")
+            time_list = str(time_input.value).split(':')
+            if len(time_list) != 3 or int(time_list[0]) < 0 or int(time_list[0]) > 24 or not (0<=int(time_list[1])<60) or not(0<=int(time_list[2])<60):
+                show_error_init("時間のフォーマットに合わせてください %H:%M:%S")
+                page.update()
+                return
+            
+            error_message.visible = False
+            hour = time_list[0]
+            minute = time_list[1]
+            second = time_list[2]
             time_input.value = timedelta(seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second))
             timer_button.text = "タイマー停止"
             timer_button.on_click = lambda e: stop_timer()
@@ -169,12 +177,7 @@ def main():
 
         def stop_timer():
             timer_button.text = "タイマー再開"
-            timer_button.on_click = lambda e: restart_timer()
-            page.update()
-
-        def restart_timer():
-            timer_button.text = "タイマー停止"
-            timer_button.on_click = lambda e: stop_timer()
+            timer_button.on_click = lambda e: start_timer()
             page.update()
 
         def reset_timer():
