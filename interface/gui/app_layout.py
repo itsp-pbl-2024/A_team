@@ -41,6 +41,7 @@ def create_centered_container(content_list):
             content_list,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.ALWAYS,  # ここでスクロールバーを追加
         ),
         alignment=ft.alignment.center,
         expand=True,
