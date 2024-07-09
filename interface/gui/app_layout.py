@@ -8,26 +8,39 @@ from datetime import timedelta, datetime
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
-def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
+def create_name_and_record_fields(
+    num_speakers, name_fields, record_buttons, recording_states, toggle_recording, is_manual
+):
     name_fields.clear()
     record_buttons.clear()
     recording_states.clear()
     for i in range(num_speakers):
         name_field = ft.TextField(label=f"話者{i+1}の名前")
-        record_button = ft.IconButton(icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40)
-        record_button.on_click = toggle_recording(i)
         name_fields.append(name_field)
-        record_buttons.append(record_button)
-        recording_states.append(False)
+        if is_manual == False:
+            record_button = ft.IconButton(icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40)
+            record_button.on_click = toggle_recording(i)
+            record_buttons.append(record_button)
+            recording_states.append(False)
 
-    name_and_record_fields = [
-        ft.Row(
-            [name_fields[i], record_buttons[i]],
-            alignment=ft.MainAxisAlignment.CENTER,
-            height=50,
-        )
-        for i in range(num_speakers)
-    ]
+    if is_manual == False:
+        name_and_record_fields = [
+            ft.Row(
+                [name_fields[i], record_buttons[i]],
+                alignment=ft.MainAxisAlignment.CENTER,
+                height=50,
+            )
+            for i in range(num_speakers)
+        ]
+    else:
+        name_and_record_fields = [
+            ft.Row(
+                [name_fields[i]],
+                alignment=ft.MainAxisAlignment.CENTER,
+                height=50,
+            )
+            for i in range(num_speakers)
+        ]
     return name_and_record_fields
 
 
@@ -43,6 +56,14 @@ def create_centered_container(content_list):
     )
 
 
+def create_manual_button_list(names):
+    for i in range(len(names)):
+        manual_button = ft.Switch()
+        manual_button_label = ft.Text(names[i])
+    manual_button_list = ft.Column([ft.Row([ft.Switch(), ft.Text(names[i])]) for i in range(len(names))])
+    return manual_button_list
+
+
 def main():
     def main_app(page: ft.Page):
         page.title = "発言量計測アプリ"
@@ -54,7 +75,7 @@ def main():
 
         speaker_count = ft.Dropdown(
             width=100,
-            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 6)],
+            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 11)],
             value="-",
         )
 
@@ -90,6 +111,7 @@ def main():
 
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
+            manual_button_list = create_manual_button_list(names)
             page.controls.clear()
             page.add(ft.Container(padding=2))
             page.add(
@@ -109,6 +131,7 @@ def main():
                 ft.Row(
                     [
                         chart,
+                        manual_button_list,
                         ft.Container(padding=3),
                         ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
                     ]
@@ -219,10 +242,20 @@ def main():
 
             return handler
 
+        def toggle_changed(e):
+            on_speaker_count_change(e)
+            page.update()
+
+        # 手動記録モード
+        manual_record_toggle = ft.Switch(on_change=toggle_changed)
+
         def on_speaker_count_change(e):
             if speaker_count.value == "-":
                 centered_container = create_centered_container(
                     [
+                        ft.Text("手動記録モード:"),
+                        manual_record_toggle,
+                        ft.Container(height=10),
                         ft.Text("話者の人数を選択してください:"),
                         speaker_count,
                         start_button,
@@ -247,9 +280,16 @@ def main():
                     record_buttons,
                     recording_states,
                     toggle_recording,
+                    manual_record_toggle.value,
                 )
                 centered_container = create_centered_container(
-                    [ft.Text("話者の人数を選択してください:"), speaker_count]
+                    [
+                        ft.Text("手動記録モード:"),
+                        manual_record_toggle,
+                        ft.Container(height=10),
+                        ft.Text("話者の人数を選択してください:"),
+                        speaker_count,
+                    ]
                     + name_and_record_fields
                     + [start_button]
                     + [error_message]
@@ -263,7 +303,15 @@ def main():
         speaker_count.on_change = on_speaker_count_change
 
         centered_container = create_centered_container(
-            [ft.Text("話者の人数を選択してください:"), speaker_count, start_button, error_message]
+            [
+                ft.Text("手動記録モード:"),
+                manual_record_toggle,
+                ft.Container(height=10),
+                ft.Text("話者の人数を選択してください:"),
+                speaker_count,
+                start_button,
+                error_message,
+            ]
         )
         page.add(centered_container)
 
