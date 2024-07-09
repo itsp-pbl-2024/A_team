@@ -96,6 +96,7 @@ def main():
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
             page.controls.clear()
+            error_message.visible = False
             page.add(ft.Container(padding=2))
             page.add(
                 ft.Row(
