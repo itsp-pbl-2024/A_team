@@ -8,6 +8,10 @@ from datetime import timedelta, datetime
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
+# サブプロセスのインスタンスを保存する変数
+process = None
+
+
 def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
     name_fields.clear()
     record_buttons.clear()
@@ -134,7 +138,11 @@ def main():
 
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
-            page.window_destroy()
+            global process
+            if process is not None:
+                process.terminate()  # サブプロセスを終了する
+                process.wait()  # 終了を待つ
+            page.window_destroy()  # アプリを終了する
 
         def refresh():
             if time_input.value.total_seconds() == 0:
@@ -234,7 +242,8 @@ def main():
             else:
                 num_speakers = int(speaker_count.value)
                 MySpeakerDiarization.register_speaker_num(num_speakers)
-                subprocess.Popen(
+                global process
+                process = subprocess.Popen(
                     [
                         sys.executable,
                         "speaker_diarization/diarization.py",
