@@ -34,3 +34,4 @@ interface/file.rttm
 
 # pycで終わるファイル
 *.pyc
+new_venv/
