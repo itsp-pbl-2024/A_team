@@ -54,6 +54,13 @@ def main():
         page.window_width = 700
         page.window_height = 700
 
+        def event(e):
+            if e.data == "close":
+                finish_meeting()
+
+        page.window.prevent_close = True
+        page.window.on_event = event
+
         least_speaker_text = ft.Text(value="")
         alert_timer = ft.Text(value="", color="red", size=20)
 
