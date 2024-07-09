@@ -123,7 +123,6 @@ def main():
                         ft.ElevatedButton(
                             text="タイマーリセット", on_click=lambda e: reset_timer()
                         ),
-                        least_speaker_text,
                         memo_button,
                     ],
                 ),
@@ -163,6 +162,7 @@ def main():
                     ]
                 )
             )
+            page.add(ft.Row([least_speaker_text]))
 
             page.update()
 
