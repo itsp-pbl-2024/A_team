@@ -16,12 +16,12 @@ class MySpeakerDiarization:
     def __init__(self, id_name=defaultdict(str), speaker_num=5):
         self.id_name = id_name
         config = SpeakerDiarizationConfig(
-            max_speakers=speaker_num,
+            max_speakers=speaker_num + 1,  # speaker_num,
             step=0.5,
             latency=0.5,
-            tau_active=0.555,
-            rho_update=0.422,
-            delta_new=1.517,
+            tau_active=0.75,
+            rho_update=0.25,
+            delta_new=0.425,
         )
         pipeline = SpeakerDiarization(config)
         mic = MicrophoneAudioSource()

@@ -8,6 +8,10 @@ from datetime import timedelta, datetime
 from speaker_diarization.diarization import MySpeakerDiarization
 
 
+# サブプロセスのインスタンスを保存する変数
+process = None
+
+
 def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
     name_fields.clear()
     record_buttons.clear()
@@ -64,7 +68,6 @@ def main():
         time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
         timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
 
-
         # 会議情報入力時、エラーメッセージを出力する
         def show_error_init(message):
             error_message.value = message
@@ -96,7 +99,6 @@ def main():
             page.add(
                 ft.Row(
                     [
-
                         timer_button,
                         time_input,
                         ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
@@ -105,7 +107,7 @@ def main():
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ],
                 ),
-                alert_timer
+                alert_timer,
             )
             page.add(ft.Container(padding=10))
             page.add(
@@ -138,13 +140,17 @@ def main():
 
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
-            page.window_destroy()
+            global process
+            if process is not None:
+                process.terminate()  # サブプロセスを終了する
+                process.wait()  # 終了を待つ
+            page.window_destroy()  # アプリを終了する
 
         def refresh():
             if time_input.value.total_seconds() == 0:
-               alert_timer.value = "Timer is expired"
-               reset_timer()
-               return
+                alert_timer.value = "Timer is expired"
+                reset_timer()
+                return
             if timer_button.text == "タイマー停止":
                 time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
                 page.update()
@@ -177,6 +183,7 @@ def main():
             timer_button.text = "タイマー開始"
             timer_button.on_click = lambda e: start_timer()
             time_input.value = timedelta(seconds=300)
+
         # メモ帳を開閉
         memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
 
@@ -236,7 +243,8 @@ def main():
             else:
                 num_speakers = int(speaker_count.value)
                 MySpeakerDiarization.register_speaker_num(num_speakers)
-                subprocess.Popen(
+                global process
+                process = subprocess.Popen(
                     [
                         sys.executable,
                         "speaker_diarization/diarization.py",
