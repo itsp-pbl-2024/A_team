@@ -190,8 +190,11 @@ def main():
         timer = Timer(name="timer", interval_s=1, callback=refresh)
 
         def start_timer():
-            time_list = str(time_input.value).split(':')
-            if not re.fullmatch(r'([0-1]?[0-9]|2[0-3]):([0-5]?[0-9]):([0-5]?[0-9])', str(time_input.value)):
+            time_list = str(time_input.value).split(":")
+            if not re.fullmatch(
+                r"([0-1]?[0-9]|2[0-3]):([0-5]?[0-9]):([0-5]?[0-9])",
+                str(time_input.value),
+            ):
                 show_error_init("時間のフォーマットに合わせてください %H:%M:%S")
                 page.update()
                 return
