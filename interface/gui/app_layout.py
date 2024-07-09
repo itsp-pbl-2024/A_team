@@ -47,7 +47,7 @@ def main():
     def main_app(page: ft.Page):
         page.title = "発言量計測アプリ"
         page.window_width = 700
-        page.window_height = 600
+        page.window_height = 700
 
         least_speaker_text = ft.Text(value="")
         alert_timer = ft.Text(value="", color="red", size=20)
@@ -63,7 +63,6 @@ def main():
         recording_states = []
         time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
         timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
-
 
         # 会議情報入力時、エラーメッセージを出力する
         def show_error_init(message):
@@ -96,16 +95,13 @@ def main():
             page.add(
                 ft.Row(
                     [
-
                         timer_button,
                         time_input,
-                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
-                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
                         memo_button,
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ],
                 ),
-                alert_timer
+                alert_timer,
             )
             page.add(ft.Container(padding=10))
             page.add(
@@ -142,9 +138,9 @@ def main():
 
         def refresh():
             if time_input.value.total_seconds() == 0:
-               alert_timer.value = "Timer is expired"
-               reset_timer()
-               return
+                alert_timer.value = "Timer is expired"
+                reset_timer()
+                return
             if timer_button.text == "タイマー停止":
                 time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
                 page.update()
@@ -177,6 +173,8 @@ def main():
             timer_button.text = "タイマー開始"
             timer_button.on_click = lambda e: start_timer()
             time_input.value = timedelta(seconds=300)
+            page.update()
+
         # メモ帳を開閉
         memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
 
