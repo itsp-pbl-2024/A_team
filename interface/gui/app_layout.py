@@ -2,6 +2,7 @@ import flet as ft
 import threading
 import subprocess
 import sys
+import re
 from .chart import create_bar_chart, update_chart, reset_chart
 from flet_timer.flet_timer import Timer
 from datetime import timedelta, datetime
@@ -45,6 +46,7 @@ def create_centered_container(content_list):
             content_list,
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.ALWAYS,  # ここでスクロールバーを追加
         ),
         alignment=ft.alignment.center,
         expand=True,
@@ -104,6 +106,7 @@ def main():
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
             page.controls.clear()
+            error_message.visible = False
             page.add(ft.Container(padding=2))
             page.add(
                 ft.Row(
@@ -180,14 +183,8 @@ def main():
         timer = Timer(name="timer", interval_s=1, callback=refresh)
 
         def start_timer():
-            time_list = str(time_input.value).split(":")
-            if (
-                len(time_list) != 3
-                or int(time_list[0]) < 0
-                or int(time_list[0]) > 24
-                or not (0 <= int(time_list[1]) < 60)
-                or not (0 <= int(time_list[2]) < 60)
-            ):
+            time_list = str(time_input.value).split(':')
+            if not re.fullmatch(r'([0-1]?[0-9]|2[0-3]):([0-5]?[0-9]):([0-5]?[0-9])', str(time_input.value)):
                 show_error_init("時間のフォーマットに合わせてください %H:%M:%S")
                 page.update()
                 return
