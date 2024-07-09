@@ -181,6 +181,7 @@ def main():
             timer_button.text = "タイマー開始"
             timer_button.on_click = lambda e: start_timer()
             time_input.value = timedelta(seconds=300)
+            page.update()
 
         # メモ帳を開閉
         memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
