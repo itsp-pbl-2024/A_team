@@ -51,7 +51,7 @@ def main():
     def main_app(page: ft.Page):
         page.title = "発言量計測アプリ"
         page.window_width = 700
-        page.window_height = 600
+        page.window_height = 700
 
         least_speaker_text = ft.Text(value="")
         alert_timer = ft.Text(value="", color="red", size=20)
@@ -101,10 +101,9 @@ def main():
                     [
                         timer_button,
                         time_input,
-                        ft.ElevatedButton(text="メモ帳", on_click=lambda e: finish_meeting()),
-                        ft.ElevatedButton(text="タイマー開始", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
+                        least_speaker_text,
                         memo_button,
-                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ],
                 ),
                 alert_timer,
@@ -130,8 +129,7 @@ def main():
                             text="リセット",
                             on_click=lambda e: reset_chart(chart, least_speaker_text, page),
                         ),
-                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
-                        least_speaker_text,
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ]
                 )
             )
