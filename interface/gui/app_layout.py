@@ -97,8 +97,9 @@ def main():
                     [
                         timer_button,
                         time_input,
+                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
+                        least_speaker_text,
                         memo_button,
-                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ],
                 ),
                 alert_timer,
@@ -124,8 +125,7 @@ def main():
                             text="リセット",
                             on_click=lambda e: reset_chart(chart, least_speaker_text, page),
                         ),
-                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
-                        least_speaker_text,
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ]
                 )
             )
