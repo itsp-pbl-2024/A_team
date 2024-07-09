@@ -13,13 +13,17 @@ from speaker_diarization.diarization import MySpeakerDiarization
 process = None
 
 
-def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
+def create_name_and_record_fields(
+    num_speakers, name_fields, record_buttons, recording_states, toggle_recording
+):
     name_fields.clear()
     record_buttons.clear()
     recording_states.clear()
     for i in range(num_speakers):
         name_field = ft.TextField(label=f"話者{i+1}の名前")
-        record_button = ft.IconButton(icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40)
+        record_button = ft.IconButton(
+            icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40
+        )
         record_button.on_click = toggle_recording(i)
         name_fields.append(name_field)
         record_buttons.append(record_button)
@@ -60,15 +64,20 @@ def main():
 
         speaker_count = ft.Dropdown(
             width=100,
-            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 11)],
+            options=[ft.dropdown.Option("-")]
+            + [ft.dropdown.Option(str(i)) for i in range(2, 11)],
             value="-",
         )
 
         name_fields = []
         record_buttons = []
         recording_states = []
-        time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
-        timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
+        time_input = ft.TextField(
+            label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200
+        )
+        timer_button = ft.ElevatedButton(
+            text="タイマー開始", on_click=lambda e: start_timer()
+        )
 
         # 会議情報入力時、エラーメッセージを出力する
         def show_error_init(message):
@@ -104,13 +113,15 @@ def main():
                     [
                         timer_button,
                         time_input,
-                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
+                        ft.ElevatedButton(
+                            text="タイマーリセット", on_click=lambda e: reset_timer()
+                        ),
                         least_speaker_text,
                         memo_button,
                     ],
                 ),
                 alert_timer,
-                error_message
+                error_message,
             )
             page.add(ft.Container(padding=10))
             page.add(
@@ -118,7 +129,9 @@ def main():
                     [
                         chart,
                         ft.Container(padding=3),
-                        ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
+                        ft.Column(
+                            controls=[memo_text_field], expand=True, alignment="start"
+                        ),
                     ]
                 )
             )
@@ -127,13 +140,19 @@ def main():
                     [
                         ft.ElevatedButton(
                             text="更新",
-                            on_click=lambda e: update_chart(chart, least_speaker_text, page),
+                            on_click=lambda e: update_chart(
+                                chart, least_speaker_text, page
+                            ),
                         ),
                         ft.ElevatedButton(
                             text="リセット",
-                            on_click=lambda e: reset_chart(chart, least_speaker_text, page),
+                            on_click=lambda e: reset_chart(
+                                chart, least_speaker_text, page
+                            ),
                         ),
-                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
+                        ft.ElevatedButton(
+                            text="会議終了", on_click=lambda e: finish_meeting()
+                        ),
                     ]
                 )
             )
@@ -149,13 +168,16 @@ def main():
             page.window_destroy()  # アプリを終了する
 
         def refresh():
-            if timer_button.text != "タイマー停止": return
+            if timer_button.text != "タイマー停止":
+                return
             if time_input.value.total_seconds() == 0:
                 alert_timer.value = "Timer is expired"
                 reset_timer()
                 return
             if timer_button.text == "タイマー停止":
-                time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
+                time_input.value = timedelta(
+                    seconds=time_input.value.total_seconds() - 1
+                )
                 page.update()
 
         timer = Timer(name="timer", interval_s=1, callback=refresh)
@@ -166,12 +188,14 @@ def main():
                 show_error_init("時間のフォーマットに合わせてください %H:%M:%S")
                 page.update()
                 return
-            
+
             error_message.visible = False
             hour = time_list[0]
             minute = time_list[1]
             second = time_list[2]
-            time_input.value = timedelta(seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second))
+            time_input.value = timedelta(
+                seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second)
+            )
             timer_button.text = "タイマー停止"
             timer_button.on_click = lambda e: stop_timer()
             alert_timer.value = ""
@@ -190,7 +214,9 @@ def main():
             page.update()
 
         # メモ帳を開閉
-        memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
+        memo_button = ft.ElevatedButton(
+            text="メモ帳を開く", on_click=lambda e: open_memo()
+        )
 
         memo_text_field = ft.TextField(
             multiline=True,
@@ -278,7 +304,12 @@ def main():
         speaker_count.on_change = on_speaker_count_change
 
         centered_container = create_centered_container(
-            [ft.Text("話者の人数を選択してください:"), speaker_count, start_button, error_message]
+            [
+                ft.Text("話者の人数を選択してください:"),
+                speaker_count,
+                start_button,
+                error_message,
+            ]
         )
         page.add(centered_container)
 
