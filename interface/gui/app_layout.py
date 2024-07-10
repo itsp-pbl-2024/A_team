@@ -13,17 +13,13 @@ from speaker_diarization.diarization import MySpeakerDiarization
 process = None
 
 
-def create_name_and_record_fields(
-    num_speakers, name_fields, record_buttons, recording_states, toggle_recording
-):
+def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
     name_fields.clear()
     record_buttons.clear()
     recording_states.clear()
     for i in range(num_speakers):
         name_field = ft.TextField(label=f"話者{i+1}の名前")
-        record_button = ft.IconButton(
-            icon=ft.icons.MIC_OFF, icon_color=ft.colors.RED, icon_size=40
-        )
+        record_button = ft.IconButton(icon=ft.icons.VOICE_OVER_OFF, icon_color=ft.colors.RED, icon_size=40)
         record_button.on_click = toggle_recording(i)
         name_fields.append(name_field)
         record_buttons.append(record_button)
@@ -71,25 +67,24 @@ def main():
 
         speaker_count = ft.Dropdown(
             width=100,
-            options=[ft.dropdown.Option("-")]
-            + [ft.dropdown.Option(str(i)) for i in range(2, 11)],
+            options=[ft.dropdown.Option("-")] + [ft.dropdown.Option(str(i)) for i in range(2, 11)],
             value="-",
         )
 
         name_fields = []
         record_buttons = []
         recording_states = []
-        time_input = ft.TextField(
-            label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200
-        )
-        timer_button = ft.ElevatedButton(
-            text="タイマー開始", on_click=lambda e: start_timer()
-        )
+        time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
+        timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
 
         # 会議情報入力時、エラーメッセージを出力する
         def show_error_init(message):
             error_message.value = message
             error_message.visible = True
+            page.update()
+
+        def invisible_error():
+            error_message.visible = False
             page.update()
 
         def start_recording(e):
@@ -110,6 +105,11 @@ def main():
                 show_error_init("エラー: 全員が異なる名前にしてください")
                 return
 
+            for _, record_button in enumerate(record_buttons):
+                if record_button.icon is not ft.icons.CHECK:
+                    show_error_init("エラー: 全員の音声を登録してください")
+                    return
+
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
             page.controls.clear()
@@ -120,9 +120,7 @@ def main():
                     [
                         timer_button,
                         time_input,
-                        ft.ElevatedButton(
-                            text="タイマーリセット", on_click=lambda e: reset_timer()
-                        ),
+                        ft.ElevatedButton(text="タイマーリセット", on_click=lambda e: reset_timer()),
                         memo_button,
                     ],
                 ),
@@ -135,9 +133,7 @@ def main():
                     [
                         chart,
                         ft.Container(padding=3),
-                        ft.Column(
-                            controls=[memo_text_field], expand=True, alignment="start"
-                        ),
+                        ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
                     ]
                 )
             )
@@ -146,19 +142,13 @@ def main():
                     [
                         ft.ElevatedButton(
                             text="更新",
-                            on_click=lambda e: update_chart(
-                                chart, least_speaker_text, page
-                            ),
+                            on_click=lambda e: update_chart(chart, least_speaker_text, page),
                         ),
                         ft.ElevatedButton(
                             text="リセット",
-                            on_click=lambda e: reset_chart(
-                                chart, least_speaker_text, page
-                            ),
+                            on_click=lambda e: reset_chart(chart, least_speaker_text, page),
                         ),
-                        ft.ElevatedButton(
-                            text="会議終了", on_click=lambda e: finish_meeting()
-                        ),
+                        ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
                     ]
                 )
             )
@@ -182,9 +172,7 @@ def main():
                 reset_timer()
                 return
             if timer_button.text == "タイマー停止":
-                time_input.value = timedelta(
-                    seconds=time_input.value.total_seconds() - 1
-                )
+                time_input.value = timedelta(seconds=time_input.value.total_seconds() - 1)
                 page.update()
 
         timer = Timer(name="timer", interval_s=1, callback=refresh)
@@ -203,9 +191,7 @@ def main():
             hour = time_list[0]
             minute = time_list[1]
             second = time_list[2]
-            time_input.value = timedelta(
-                seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second)
-            )
+            time_input.value = timedelta(seconds=60 * 60 * int(hour) + 60 * int(minute) + int(second))
             timer_button.text = "タイマー停止"
             timer_button.on_click = lambda e: stop_timer()
             alert_timer.value = ""
@@ -224,21 +210,21 @@ def main():
             page.update()
 
         # メモ帳を開閉
-        memo_button = ft.ElevatedButton(
-            text="メモ帳を開く", on_click=lambda e: open_memo()
-        )
+        memo_button = ft.ElevatedButton(text="メモ帳を開く", on_click=lambda e: open_memo())
 
         memo_text_field = ft.TextField(
             multiline=True,
-            width=500,
-            height=300,
+            width=400,
+            height=320,
             label="メモ帳",
-            hint_text="ここにテキストを入力してください...",
+            hint_text="ここにテキストを入力してください...\n",
             visible=False,
+            max_lines=20,
+            min_lines=20,
         )
 
         def open_memo():
-            page.window_width = 1200
+            page.window_width = 1100
             memo_text_field.visible = True
 
             memo_button.text = "メモ帳を閉じる"
@@ -255,17 +241,35 @@ def main():
 
         def toggle_recording(index):
             def handler(e):
-                recording_states[index] = not recording_states[index]
-                if recording_states[index]:
-                    record_buttons[index].icon = ft.icons.MIC
-                    record_buttons[index].icon_color = ft.colors.GREEN
-                    MySpeakerDiarization.clear_file()
-                else:
-                    record_buttons[index].icon = ft.icons.MIC_OFF
-                    record_buttons[index].icon_color = ft.colors.RED
-                    MySpeakerDiarization.register_id(name_fields[index].value)
+                invisible_error()
+                recording_state = recording_states[index]
+                if recording_state is False:
+                    if not all(state is False for state in recording_states):
+                        show_error_init("エラー: 他の人の登録作業中です。")
+                        return
+                    if name_fields[index].value == "":
+                        show_error_init("エラー: 名前を入力してください")
+                        return
 
-                page.update()
+                recording_states[index] = True
+
+                if recording_state is False:
+                    record_buttons[index].icon = ft.icons.RECORD_VOICE_OVER
+                    record_buttons[index].icon_color = ft.colors.BLUE
+                    MySpeakerDiarization.clear_file()
+                    page.update()
+                else:
+                    invisible_error()
+                    is_registered = MySpeakerDiarization.register_id(name_fields[index].value)
+                    if is_registered:
+                        record_buttons[index].icon = ft.icons.CHECK
+                        record_buttons[index].icon_color = ft.colors.GREEN
+                    else:
+                        show_error_init("エラー: 音声が検出できませんでした。もう一度録音してください。")
+                        record_buttons[index].icon = ft.icons.VOICE_OVER_OFF
+                        record_buttons[index].icon_color = ft.colors.RED
+                    recording_states[index] = False
+                    page.update()
 
             return handler
 

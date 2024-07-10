@@ -16,18 +16,19 @@ class MySpeakerDiarization:
     def __init__(self, id_name=defaultdict(str), speaker_num=5):
         self.id_name = id_name
         config = SpeakerDiarizationConfig(
-            max_speakers=speaker_num + 1,  # speaker_num,
+            max_speakers=MySpeakerDiarization.get_enrolled_speakers_num(speaker_num),  # speaker_num,
             step=0.5,
             latency=0.5,
-            tau_active=0.75,
-            rho_update=0.25,
-            delta_new=0.425,
+            tau_active=0.8,
+            rho_update=0.3,
+            delta_new=0.35,
         )
         pipeline = SpeakerDiarization(config)
         mic = MicrophoneAudioSource()
         inference = StreamingInference(pipeline, mic)
         inference.attach_observers(RTTMWriter(mic.uri, "file.rttm"))
         self.prediction = inference()
+        print("diarization started.")
 
     def start(self):
         self.clear_file()
@@ -37,21 +38,40 @@ class MySpeakerDiarization:
         cls.id_name[name] = speaker_id
 
     @classmethod
-    def register_id(cls, name):
+    def register_id(cls, name) -> bool:
         file_path = "file.rttm"
-        with open(file_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+        if name == "":
+            return False
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
 
-        durations = defaultdict(float)
-        for line in lines:
-            if line.startswith("SPEAKER"):
-                data = line.split(" ")
-                speaker_id = data[7]
-                durations[speaker_id] = float(data[4]) + durations[speaker_id]
+            if not lines:
+                return False
 
-        durations = list(durations.items())
-        max_id = max(durations, key=lambda x: x[1])[0]
-        cls.associate_id2name(max_id, name)
+            durations = defaultdict(float)
+            for line in lines:
+                if line.startswith("SPEAKER"):
+                    data = line.split(" ")
+                    if len(data) < 8:  # Ensure there are enough elements
+                        print("error in rttm file.")
+                        return False
+                    try:
+                        speaker_id = data[7]
+                        duration = float(data[4])
+                        durations[speaker_id] += duration
+                    except (ValueError, IndexError):
+                        return False
+
+            if not durations:
+                return False
+
+            max_id = max(durations.items(), key=lambda x: x[1])[0]
+            cls.associate_id2name(max_id, name)
+            return True
+
+        except FileNotFoundError:
+            return False
 
     @staticmethod
     def clear_file():
@@ -101,10 +121,14 @@ class MySpeakerDiarization:
         return cls.id_name[name]
 
     @staticmethod
+    def get_enrolled_speakers_num(speaker_num):
+        return speaker_num + 1
+
+    @staticmethod
     def register_speaker_num(speaker_num):
         url = "http://127.0.0.1:5000/register"
         headers = {"Content-Type": "application/json"}
-        data = {"n": speaker_num}
+        data = {"n": MySpeakerDiarization.get_enrolled_speakers_num(speaker_num)}
         res = requests.post(url, json=data)
 
 
