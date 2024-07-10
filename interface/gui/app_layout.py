@@ -7,7 +7,9 @@ from .chart import create_bar_chart, update_chart, reset_chart
 from flet_timer.flet_timer import Timer
 from datetime import timedelta, datetime
 from speaker_diarization.diarization import MySpeakerDiarization
-
+import time
+import os
+import queue
 
 # サブプロセスのインスタンスを保存する変数
 process = None
@@ -51,6 +53,7 @@ def create_centered_container(content_list):
 
 def main():
     def main_app(page: ft.Page):
+        description_text = ft.Text("話者の人数を選択してください:")
         page.title = "発言量計測アプリ"
         page.window_width = 700
         page.window_height = 700
@@ -273,11 +276,18 @@ def main():
 
             return handler
 
+        # "準備中です。しばらくお待ちください" テキストとローディングアニメーションの追加
+        loading_text = ft.Text(value="準備中です。しばらくお待ちください")
+        loading_animation = ft.ProgressRing()
+
+        # UI更新用キューを作成
+        ui_queue = queue.Queue()
+
         def on_speaker_count_change(e):
             if speaker_count.value == "-":
                 centered_container = create_centered_container(
                     [
-                        ft.Text("話者の人数を選択してください:"),
+                        description_text,
                         speaker_count,
                         start_button,
                         error_message,
@@ -287,15 +297,47 @@ def main():
                 page.add(centered_container)
             else:
                 num_speakers = int(speaker_count.value)
+                speaker_count.visible = False
+                start_button.visible = False
+
+                description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
                 MySpeakerDiarization.register_speaker_num(num_speakers)
                 global process
-                process = subprocess.Popen(
-                    [
-                        sys.executable,
-                        "speaker_diarization/diarization.py",
-                        str(num_speakers),
-                    ]
-                )
+
+                log_file = "subprocess_log.txt"
+                with open(log_file, "w") as f:
+                    process = subprocess.Popen(
+                        [
+                            sys.executable,
+                            "-u",
+                            "speaker_diarization/diarization.py",
+                            str(num_speakers),
+                        ],
+                        stdout=f,
+                        stderr=f,
+                        bufsize=1,  # 行バッファリングモードを有効にする
+                        universal_newlines=True,  # テキストモードで出力
+                    )
+
+                # サブプロセスの起動を監視するスレッドを開始
+
+                def monitor_log():
+
+                    with open(log_file, "r") as f:
+
+                        while True:
+                            line = f.readline()
+                            if not line:
+                                time.sleep(10)
+                                continue
+                            # 'Streaming' という単語を検出
+                            if "Streaming" in line.split():
+                                print("Streaming has started")
+                                ui_queue.put("streaming_started")
+                                break
+
+                threading.Thread(target=monitor_log, daemon=True).start()
+
                 name_and_record_fields = create_name_and_record_fields(
                     num_speakers,
                     name_fields,
@@ -304,14 +346,32 @@ def main():
                     toggle_recording,
                 )
                 centered_container = create_centered_container(
-                    [ft.Text("話者の人数を選択してください:"), speaker_count]
+                    [description_text, speaker_count]
                     + name_and_record_fields
                     + [start_button]
                     + [error_message]
+                    + [loading_text, loading_animation]  # 準備中テキストとローディングアニメーションを追加
                 )
+                for i, record_button in enumerate(record_buttons):
+                    record_button.visible = False
                 page.controls.clear()
                 page.add(centered_container)
             page.update()
+
+        def ui_update_thread():
+            while True:
+                message = ui_queue.get()
+                if message == "streaming_started":
+                    loading_text.visible = False
+                    loading_animation.visible = False
+                    start_button.visible = True
+                    for i, record_button in enumerate(record_buttons):
+                        record_button.visible = True
+                    page.update()
+                    break
+
+        # UI更新スレッドを開始
+        threading.Thread(target=ui_update_thread, daemon=True).start()
 
         start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
         error_message = ft.Text("", color=ft.colors.RED, visible=False)
@@ -319,7 +379,7 @@ def main():
 
         centered_container = create_centered_container(
             [
-                ft.Text("話者の人数を選択してください:"),
+                description_text,
                 speaker_count,
                 start_button,
                 error_message,

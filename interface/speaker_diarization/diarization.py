@@ -26,9 +26,18 @@ class MySpeakerDiarization:
         pipeline = SpeakerDiarization(config)
         mic = MicrophoneAudioSource()
         inference = StreamingInference(pipeline, mic)
+        self.streaming_flag = False
+
+        # フックを追加して、ストリーミングの進行状況を標準出力に書き込む
+        def on_next(value):
+            if not self.streaming_flag:
+                self.streaming_flag = True
+                print("Streaming now", flush=True)
+
+        # カスタムオブザーバーを追加
+        inference.attach_hooks(on_next)
         inference.attach_observers(RTTMWriter(mic.uri, "file.rttm"))
         self.prediction = inference()
-        print("diarization started.")
 
     def start(self):
         self.clear_file()
