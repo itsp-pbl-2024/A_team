@@ -53,7 +53,7 @@ def create_centered_container(content_list):
 
 def main():
     def main_app(page: ft.Page):
-        description_text = ft.Text("話者の人数を選択してください:")
+
         page.title = "発言量計測アプリ"
         page.window_width = 700
         page.window_height = 700
@@ -144,8 +144,8 @@ def main():
                 ft.Row(
                     [
                         ft.ElevatedButton(
-                            text="更新",
-                            on_click=lambda e: update_chart(chart, least_speaker_text, page),
+                            text="一時停止",
+                            on_click=lambda e: toggle_pause(),  # chart, least_speaker_text, page),
                         ),
                         ft.ElevatedButton(
                             text="リセット",
@@ -158,6 +158,22 @@ def main():
             page.add(ft.Row([least_speaker_text]))
 
             page.update()
+            start_auto_update(chart)
+
+        auto_update_running = True
+
+        def start_auto_update(chart):
+            def auto_update():
+                while True:
+                    if auto_update_running:
+                        update_chart(chart, least_speaker_text, page)
+                    time.sleep(3)  # 5秒ごとに実行
+
+            threading.Thread(target=auto_update, daemon=True).start()
+
+        def toggle_pause():
+            global auto_update_running
+            auto_update_running = not auto_update_running
 
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
@@ -282,8 +298,10 @@ def main():
 
         # UI更新用キューを作成
         ui_queue = queue.Queue()
+        description_text = ft.Text("話者の人数を選択してください:")
 
         def on_speaker_count_change(e):
+            global description_text
             if speaker_count.value == "-":
                 centered_container = create_centered_container(
                     [
@@ -328,7 +346,7 @@ def main():
                         while True:
                             line = f.readline()
                             if not line:
-                                time.sleep(10)
+                                time.sleep(3)
                                 continue
                             # 'Streaming' という単語を検出
                             if "Streaming" in line.split():
