@@ -11,8 +11,19 @@ import time
 import os
 import queue
 
+
 # サブプロセスのインスタンスを保存する変数
-process = None
+# process = None
+
+
+class AppState:
+    def __init__(self):
+        self.process = None
+        self.auto_update_running = True
+        self.ui_queue = queue.Queue()
+
+
+app_state = AppState()
 
 
 def create_name_and_record_fields(num_speakers, name_fields, record_buttons, recording_states, toggle_recording):
@@ -160,27 +171,28 @@ def main():
             page.update()
             start_auto_update(chart)
 
-        auto_update_running = True
+        app_state.auto_update_running = True
 
         def start_auto_update(chart):
             def auto_update():
                 while True:
-                    if auto_update_running:
+                    time.sleep(5)  # 5秒ごとに実行
+                    if app_state.auto_update_running:
                         update_chart(chart, least_speaker_text, page)
-                    time.sleep(3)  # 5秒ごとに実行
 
             threading.Thread(target=auto_update, daemon=True).start()
 
         def toggle_pause():
-            global auto_update_running
-            auto_update_running = not auto_update_running
+            app_state.auto_update_running = not app_state.auto_update_running
+            if app_state.auto_update_running:
+                MySpeakerDiarization.clear_file()
 
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
-            global process
-            if process is not None:
-                process.terminate()  # サブプロセスを終了する
-                process.wait()  # 終了を待つ
+            # global process
+            if app_state.process is not None:
+                app_state.process.terminate()  # サブプロセスを終了する
+                app_state.process.wait()  # 終了を待つ
             page.window_destroy()  # アプリを終了する
 
         def refresh():
@@ -297,7 +309,7 @@ def main():
         loading_animation = ft.ProgressRing()
 
         # UI更新用キューを作成
-        ui_queue = queue.Queue()
+        app_state.ui_queue = queue.Queue()
         description_text = ft.Text("話者の人数を選択してください:")
 
         def on_speaker_count_change(e):
@@ -320,11 +332,10 @@ def main():
 
                 description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
                 MySpeakerDiarization.register_speaker_num(num_speakers)
-                global process
 
                 log_file = "subprocess_log.txt"
                 with open(log_file, "w") as f:
-                    process = subprocess.Popen(
+                    app_state.process = subprocess.Popen(
                         [
                             sys.executable,
                             "-u",
@@ -351,7 +362,7 @@ def main():
                             # 'Streaming' という単語を検出
                             if "Streaming" in line.split():
                                 print("Streaming has started")
-                                ui_queue.put("streaming_started")
+                                app_state.ui_queue.put("streaming_started")
                                 break
 
                 threading.Thread(target=monitor_log, daemon=True).start()
@@ -378,7 +389,7 @@ def main():
 
         def ui_update_thread():
             while True:
-                message = ui_queue.get()
+                message = app_state.ui_queue.get()
                 if message == "streaming_started":
                     loading_text.visible = False
                     loading_animation.visible = False
