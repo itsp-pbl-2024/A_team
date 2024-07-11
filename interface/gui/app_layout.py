@@ -62,6 +62,20 @@ def create_centered_container(content_list):
     )
 
 
+def toggle_pause(button: ft.ElevatedButton, page: ft.Page):
+    # 一時停止ボタンを押したときの処理
+
+    app_state.auto_update_running = not app_state.auto_update_running
+    if app_state.auto_update_running:
+        button.text = "一時停止"
+        button.color = ft.colors.PINK
+        MySpeakerDiarization.clear_file()
+    else:
+        button.text = "再開"
+        button.color = ft.colors.PRIMARY
+    page.update()
+
+
 def main():
     def main_app(page: ft.Page):
 
@@ -151,13 +165,13 @@ def main():
                     ]
                 )
             )
+            pause_button = ft.ElevatedButton(
+                text="一時停止", on_click=lambda e: toggle_pause(pause_button, page), color=ft.colors.PINK
+            )
             page.add(
                 ft.Row(
                     [
-                        ft.ElevatedButton(
-                            text="一時停止",
-                            on_click=lambda e: toggle_pause(),  # chart, least_speaker_text, page),
-                        ),
+                        pause_button,
                         ft.ElevatedButton(
                             text="リセット",
                             on_click=lambda e: reset_chart(chart, least_speaker_text, page),
@@ -171,8 +185,6 @@ def main():
             page.update()
             start_auto_update(chart)
 
-        app_state.auto_update_running = True
-
         def start_auto_update(chart):
             def auto_update():
                 while True:
@@ -181,11 +193,6 @@ def main():
                         update_chart(chart, least_speaker_text, page)
 
             threading.Thread(target=auto_update, daemon=True).start()
-
-        def toggle_pause():
-            app_state.auto_update_running = not app_state.auto_update_running
-            if app_state.auto_update_running:
-                MySpeakerDiarization.clear_file()
 
         # 会議を終了する(アプリを終了する)
         def finish_meeting():
@@ -304,8 +311,7 @@ def main():
 
             return handler
 
-        # "準備中です。しばらくお待ちください" テキストとローディングアニメーションの追加
-        loading_text = ft.Text(value="準備中です。しばらくお待ちください")
+        # ローディングアニメーションの追加
         loading_animation = ft.ProgressRing()
 
         # UI更新用キューを作成
@@ -379,9 +385,9 @@ def main():
                     + name_and_record_fields
                     + [start_button]
                     + [error_message]
-                    + [loading_text, loading_animation]  # 準備中テキストとローディングアニメーションを追加
+                    + [loading_animation]  # 準備中テキストとローディングアニメーションを追加
                 )
-                for i, record_button in enumerate(record_buttons):
+                for _, record_button in enumerate(record_buttons):
                     record_button.visible = False
                 page.controls.clear()
                 page.add(centered_container)
@@ -391,7 +397,6 @@ def main():
             while True:
                 message = app_state.ui_queue.get()
                 if message == "streaming_started":
-                    loading_text.visible = False
                     loading_animation.visible = False
                     start_button.visible = True
                     for i, record_button in enumerate(record_buttons):
