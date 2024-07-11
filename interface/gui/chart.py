@@ -65,9 +65,8 @@ def update_chart(chart, least_speaker_text, page):
         if response.status_code == 200:
             speech_amount = response.json().get("duration", 0)
         else:
+            print("Error: 接続に失敗しました")
             speech_amount = 0  # エラーが発生した場合は発話量を0とする
-
-        speech_amount = 1
 
         speech_amounts.append(speech_amount)
         total_speech += speech_amount

@@ -31,6 +31,7 @@ backend/__pycache__/server.cpython-312.pyc
 __pycache__/test_module.cpython-311-pytest-7.4.0.pyc
 backend/__pycache__/server.cpython-311.pyc
 interface/file.rttm
+interface/subprocess_log.txt
 
 # pycで終わるファイル
 *.pyc
