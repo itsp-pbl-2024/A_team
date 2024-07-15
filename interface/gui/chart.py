@@ -85,6 +85,9 @@ def update_chart(chart, least_speaker_text, page, is_manual):
 
 
 def reset_chart(chart, least_speaker_text, page):
+    API_Endpoint = "http://127.0.0.1:5000/reset"
+    res = requests.post(API_Endpoint)
+
     for group in chart.bar_groups:
         group.bar_rods[0].to_y = 0
     least_speaker_text.value = ""

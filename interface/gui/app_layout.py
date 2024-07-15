@@ -76,12 +76,14 @@ def create_centered_container(content_list):
 
 
 # 手動記録モード、記録ボタンの作成
-def create_manual_button_list(names, toggle_manual_record, manual_time_start):
+def create_manual_button_list(names, toggle_manual_record, manual_time_start, visible_flag: bool = True):
     manual_button_list = []
     for i in range(len(names)):
         manual_button = ft.Switch()
+        manual_button.visible = visible_flag
         manual_button.on_change = toggle_manual_record(i)
         manual_button_label = ft.Text(names[i])
+        manual_button_label.visible = visible_flag
         manual_time_start.append("stop")
         manual_button_list.append(ft.Row([manual_button, manual_button_label]))
     manual_button_layout = ft.Column(manual_button_list)
@@ -106,15 +108,12 @@ def main():
     def main_app(page: ft.Page):
 
         page.title = "発言量計測アプリ"
-        page.window_width = 700
+        page.window_width = 750
         page.window_height = 700
 
         def event(e):
             if e.data == "close":
                 finish_meeting()
-
-        # page.window.prevent_close = True
-        # page.window.on_event = event
 
         least_speaker_text = ft.Text(value="")
         alert_timer = ft.Text(value="", color="red", size=20)
@@ -171,7 +170,9 @@ def main():
 
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
-            manual_button_list = create_manual_button_list(names, toggle_manual_record, manual_time_start)
+            manual_button_list = create_manual_button_list(
+                names, toggle_manual_record, manual_time_start, visible_flag=manual_record_toggle.value
+            )
             page.controls.clear()
             error_message.visible = False
             page.add(ft.Container(padding=2))
@@ -304,7 +305,7 @@ def main():
             page.update()
 
         def close_memo():
-            page.window_width = 700
+            page.window_width = 750
             memo_text_field.visible = False
 
             memo_button.text = "メモ帳を開く"
@@ -428,8 +429,10 @@ def main():
 
                 else:
                     # 自動モード
-
+                    page.window.prevent_close = True
+                    page.window.on_event = event
                     start_button.visible = False
+
                     # UI更新スレッドを開始
                     threading.Thread(target=ui_update_thread, daemon=True).start()
 
