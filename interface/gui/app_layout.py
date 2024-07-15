@@ -366,79 +366,93 @@ def main():
             else:
                 num_speakers = int(speaker_count.value)
                 speaker_count.visible = False
-                start_button.visible = False
 
                 if manual_record_toggle.value:
-                    #手動モード
-                else:
-                    #自動モード
+                    # 手動モード
+                    description_text = ft.Text("それぞれの話者の名前を入力してください:")
+                    MySpeakerDiarization.register_speaker_num(num_speakers)
 
-                description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
-                MySpeakerDiarization.register_speaker_num(num_speakers)
-
-                log_file = "subprocess_log.txt"
-                with open(log_file, "w") as f:
-                    app_state.process = subprocess.Popen(
-                        [
-                            sys.executable,
-                            "-u",
-                            "speaker_diarization/diarization.py",
-                            str(num_speakers),
-                        ],
-                        stdout=f,
-                        stderr=f,
-                        bufsize=1,  # 行バッファリングモードを有効にする
-                        universal_newlines=True,  # テキストモードで出力
+                    name_and_record_fields = create_name_and_record_fields(
+                        num_speakers,
+                        name_fields,
+                        record_buttons,
+                        recording_states,
+                        toggle_recording,
+                        manual_record_toggle.value,
                     )
 
-                # サブプロセスの起動を監視するスレッドを開始
+                    centered_container = create_centered_container(
+                        [ft.Text("手動記録モード:"), ft.Container(height=10), description_text, speaker_count]
+                        + name_and_record_fields
+                        + [start_button]
+                        + [error_message]
+                    )
+                    page.controls.clear()
+                    page.add(centered_container)
 
-                def monitor_log():
+                else:
+                    # 自動モード
 
-                    with open(log_file, "r") as f:
+                    start_button.visible = False
+                    # UI更新スレッドを開始
+                    threading.Thread(target=ui_update_thread, daemon=True).start()
 
-                        while True:
-                            line = f.readline()
-                            if not line:
-                                time.sleep(3)
-                                continue
-                            # 'Streaming' という単語を検出
-                            if "Streaming" in line.split():
-                                print("Streaming has started")
-                                app_state.ui_queue.put("streaming_started")
-                                break
+                    description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
+                    MySpeakerDiarization.register_speaker_num(num_speakers)
 
-                threading.Thread(target=monitor_log, daemon=True).start()
+                    log_file = "subprocess_log.txt"
+                    with open(log_file, "w") as f:
+                        app_state.process = subprocess.Popen(
+                            [
+                                sys.executable,
+                                "-u",
+                                "speaker_diarization/diarization.py",
+                                str(num_speakers),
+                            ],
+                            stdout=f,
+                            stderr=f,
+                            bufsize=1,  # 行バッファリングモードを有効にする
+                            universal_newlines=True,  # テキストモードで出力
+                        )
 
-                name_and_record_fields = create_name_and_record_fields(
-                    num_speakers,
-                    name_fields,
-                    record_buttons,
-                    recording_states,
-                    toggle_recording,
-                    manual_record_toggle.value,
-                )
-                centered_container = create_centered_container(
-                    # 怪しい
-                    [
-                        ft.Text("手動記録モード:"),
-                        manual_record_toggle,
-                        ft.Container(height=10),
-                        description_text,
-                        speaker_count,
-                    ]
-                    +
-                    # ここまで
-                    [description_text, speaker_count]
-                    + name_and_record_fields
-                    + [start_button]
-                    + [error_message]
-                    + [loading_animation]  # 準備中テキストとローディングアニメーションを追加
-                )
-                for _, record_button in enumerate(record_buttons):
-                    record_button.visible = False
-                page.controls.clear()
-                page.add(centered_container)
+                    # サブプロセスの起動を監視するスレッドを開始
+
+                    def monitor_log():
+
+                        with open(log_file, "r") as f:
+
+                            while True:
+                                line = f.readline()
+                                if not line:
+                                    time.sleep(3)
+                                    continue
+                                # 'Streaming' という単語を検出
+                                if "Streaming" in line.split():
+                                    print("Streaming has started")
+                                    app_state.ui_queue.put("streaming_started")
+                                    break
+
+                    threading.Thread(target=monitor_log, daemon=True).start()
+
+                    name_and_record_fields = create_name_and_record_fields(
+                        num_speakers,
+                        name_fields,
+                        record_buttons,
+                        recording_states,
+                        toggle_recording,
+                        manual_record_toggle.value,
+                    )
+                    centered_container = create_centered_container(
+                        [description_text, speaker_count]
+                        + name_and_record_fields
+                        + [start_button]
+                        + [error_message]
+                        + [loading_animation]  # 準備中テキストとローディングアニメーションを追加
+                    )
+                    for _, record_button in enumerate(record_buttons):
+                        record_button.visible = False
+                    page.controls.clear()
+                    page.add(centered_container)
             page.update()
 
         def ui_update_thread():
@@ -451,9 +465,6 @@ def main():
                         record_button.visible = True
                     page.update()
                     break
-
-        # UI更新スレッドを開始
-        threading.Thread(target=ui_update_thread, daemon=True).start()
 
         start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
         error_message = ft.Text("", color=ft.colors.RED, visible=False)
