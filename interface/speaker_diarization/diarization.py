@@ -21,7 +21,7 @@ class MySpeakerDiarization:
             latency=0.5,
             tau_active=0.8,
             rho_update=0.3,
-            delta_new=0.35,
+            delta_new=0.375,
         )
         pipeline = SpeakerDiarization(config)
         mic = MicrophoneAudioSource()
