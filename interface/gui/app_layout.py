@@ -368,6 +368,11 @@ def main():
                 speaker_count.visible = False
                 start_button.visible = False
 
+                if manual_record_toggle.value:
+                    #手動モード
+                else:
+                    #自動モード
+
                 description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
                 MySpeakerDiarization.register_speaker_num(num_speakers)
 
