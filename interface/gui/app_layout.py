@@ -167,7 +167,7 @@ def main():
             # 手動モードの場合はここで名前を登録
             if manual_record_toggle.value:
                 for i in range(len(names)):
-                    MySpeakerDiarization.associate_id2name(i, names[i])
+                    MySpeakerDiarization.associate_id2name(f"speaker{i}", names[i])
 
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
@@ -224,7 +224,7 @@ def main():
                 while True:
                     time.sleep(5)  # 5秒ごとに実行
                     if app_state.auto_update_running:
-                        update_chart(chart, least_speaker_text, page)
+                        update_chart(chart, least_speaker_text, page, manual_record_toggle.value)
 
             threading.Thread(target=auto_update, daemon=True).start()
 
@@ -320,12 +320,9 @@ def main():
                 is_talking = manual_time_start[index] != "stop"
                 if not is_talking:
                     # 話しはじめ
-                    print("start!!!!!!!!!!!!!!!!")
                     manual_time_start[index] = datetime.now()
-                    print("start, now = " + str(manual_time_start[index]))
                 else:
                     # 話しおわり
-                    print("end!!!!!!!!!!!!!!!!")
                     talking_end_time = datetime.now()
                     talking_time = (talking_end_time - manual_time_start[index]).total_seconds()
                     manual_time_start[index] = "stop"
@@ -333,11 +330,9 @@ def main():
                     headers = {"Content-Type": "application/json"}
                     data = {
                         "id": index,
-                        "durations": str(talking_time),
+                        "durations": [talking_time],
                     }
                     res = requests.post(url, json=data, headers=headers)
-                    print("end-end!!!!!!!!!!!!!!!!")
-                    print("end, date = " + str(talking_time))
 
             return handler
 
