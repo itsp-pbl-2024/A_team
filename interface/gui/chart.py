@@ -62,10 +62,10 @@ def update_chart(chart, least_speaker_text, page):
         current_id = int(current_id.split("r")[1])
         body = {"id": current_id}
         response = requests.get(API_Endpoint, json=body)
-
         if response.status_code == 200:
             speech_amount = response.json().get("duration", 0)
         else:
+            print("Error: 接続に失敗しました")
             speech_amount = 0  # エラーが発生した場合は発話量を0とする
 
         speech_amounts.append(speech_amount)
