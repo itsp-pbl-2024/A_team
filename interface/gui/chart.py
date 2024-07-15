@@ -49,7 +49,7 @@ def create_bar_chart(names):
     )
 
 
-def update_chart(chart, least_speaker_text, page):
+def update_chart(chart, least_speaker_text, page, is_manual):
     MySpeakerDiarization.save_to_server()
     # APIに接続するための情報
     API_Endpoint = "http://127.0.0.1:5000/get_speaking_time"
