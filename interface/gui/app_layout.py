@@ -108,8 +108,8 @@ def main():
             if e.data == "close":
                 finish_meeting()
 
-        page.window.prevent_close = True
-        page.window.on_event = event
+        # page.window.prevent_close = True
+        # page.window.on_event = event
 
         least_speaker_text = ft.Text(value="")
         alert_timer = ft.Text(value="", color="red", size=20)
