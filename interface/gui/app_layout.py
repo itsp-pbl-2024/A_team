@@ -352,12 +352,9 @@ def main():
             if speaker_count.value == "-":
                 centered_container = create_centered_container(
                     [
-                        # 怪しい
                         ft.Text("手動記録モード:"),
                         manual_record_toggle,
                         ft.Container(height=10),
-                        ft.Text("話者の人数を選択してください:"),
-                        # ここまで
                         description_text,
                         speaker_count,
                         start_button,
@@ -422,7 +419,7 @@ def main():
                         ft.Text("手動記録モード:"),
                         manual_record_toggle,
                         ft.Container(height=10),
-                        ft.Text("話者の人数を選択してください:"),
+                        description_text,
                         speaker_count,
                     ]
                     +
@@ -459,12 +456,9 @@ def main():
 
         centered_container = create_centered_container(
             [
-                # 怪しい
                 ft.Text("手動記録モード:"),
                 manual_record_toggle,
                 ft.Container(height=10),
-                ft.Text("話者の人数を選択してください:"),
-                # ここまで
                 description_text,
                 speaker_count,
                 start_button,
