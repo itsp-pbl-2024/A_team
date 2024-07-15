@@ -10,7 +10,7 @@ from speaker_diarization.diarization import MySpeakerDiarization
 import time
 import os
 import queue
-
+import requests
 
 # サブプロセスのインスタンスを保存する変数
 # process = None
@@ -75,12 +75,17 @@ def create_centered_container(content_list):
     )
 
 
-def create_manual_button_list(names):
+# 手動記録モード、記録ボタンの作成
+def create_manual_button_list(names, toggle_manual_record, manual_time_start):
+    manual_button_list = []
     for i in range(len(names)):
         manual_button = ft.Switch()
+        manual_button.on_change = toggle_manual_record(i)
         manual_button_label = ft.Text(names[i])
-    manual_button_list = ft.Column([ft.Row([ft.Switch(), ft.Text(names[i])]) for i in range(len(names))])
-    return manual_button_list
+        manual_time_start.append("stop")
+        manual_button_list.append(ft.Row([manual_button, manual_button_label]))
+    manual_button_layout = ft.Column(manual_button_list)
+    return manual_button_layout
 
 
 def toggle_pause(button: ft.ElevatedButton, page: ft.Page):
@@ -159,9 +164,14 @@ def main():
                     show_error_init("エラー: 全員の音声を登録してください")
                     return
 
+            # 手動モードの場合はここで名前を登録
+            if manual_record_toggle.value:
+                for i in range(len(names)):
+                    MySpeakerDiarization.associate_id2name(i, names[i])
+
             MySpeakerDiarization.clear_file()
             chart = create_bar_chart(names)
-            manual_button_list = create_manual_button_list(names)
+            manual_button_list = create_manual_button_list(names, toggle_manual_record, manual_time_start)
             page.controls.clear()
             error_message.visible = False
             page.add(ft.Container(padding=2))
@@ -182,6 +192,7 @@ def main():
                 ft.Row(
                     [
                         chart,
+                        # これが手動記録用のトグル
                         manual_button_list,
                         ft.Container(padding=3),
                         ft.Column(controls=[memo_text_field], expand=True, alignment="start"),
@@ -299,6 +310,36 @@ def main():
             memo_button.text = "メモ帳を開く"
             memo_button.on_click = lambda e: open_memo()
             page.update()
+
+        # 手動モード、話し始めた時間 (話していないときは"stop")
+        manual_time_start = []
+
+        # 手動記録用のトグル(グラフがある画面)
+        def toggle_manual_record(index):
+            def handler(e):
+                is_talking = manual_time_start[index] != "stop"
+                if not is_talking:
+                    # 話しはじめ
+                    print("start!!!!!!!!!!!!!!!!")
+                    manual_time_start[index] = datetime.now()
+                    print("start, now = " + str(manual_time_start[index]))
+                else:
+                    # 話しおわり
+                    print("end!!!!!!!!!!!!!!!!")
+                    talking_end_time = datetime.now()
+                    talking_time = (talking_end_time - manual_time_start[index]).total_seconds()
+                    manual_time_start[index] = "stop"
+                    url = "http://127.0.0.1:5000/send"
+                    headers = {"Content-Type": "application/json"}
+                    data = {
+                        "id": index,
+                        "durations": str(talking_time),
+                    }
+                    res = requests.post(url, json=data, headers=headers)
+                    print("end-end!!!!!!!!!!!!!!!!")
+                    print("end, date = " + str(talking_time))
+
+            return handler
 
         def toggle_recording(index):
             def handler(e):
