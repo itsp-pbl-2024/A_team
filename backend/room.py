@@ -12,8 +12,10 @@ class Room:
         self._latests = defaultdict(int)
         self._room_id = room_id
 
-        # 各participantについて、_latestsに初期値0として登録
-        for participant in participants.get_participants():
+        self.reset_latests()
+
+    def reset_latests(self):
+        for participant in self._participants.get_participants():
             self._latests[participant] = 0
 
     # send message and update latestmessage
