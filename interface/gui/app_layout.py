@@ -21,6 +21,7 @@ class AppState:
         self.process = None
         self.auto_update_running = True
         self.ui_queue = queue.Queue()
+        self.description_text = ft.Text("話者の人数を選択してください:")
 
 
 app_state = AppState()
@@ -109,13 +110,13 @@ def main():
 
         page.title = "発言量計測アプリ"
         page.window_width = 750
-        page.window_height = 700
+        page.window_height = 650
 
         def event(e):
             if e.data == "close":
                 finish_meeting()
 
-        least_speaker_text = ft.Text(value="")
+        least_speaker_text = ft.Text(value="", size=24)
         alert_timer = ft.Text(value="", color="red", size=20)
 
         speaker_count = ft.Dropdown(
@@ -129,6 +130,10 @@ def main():
         recording_states = []
         time_input = ft.TextField(label="時間 (hh:mm:ss)", value=timedelta(seconds=300), width=200)
         timer_button = ft.ElevatedButton(text="タイマー開始", on_click=lambda e: start_timer())
+
+        pause_button = ft.ElevatedButton(
+            text="一時停止", on_click=lambda e: toggle_pause(pause_button, page), color=ft.colors.PINK
+        )
 
         # 会議情報入力時、エラーメッセージを出力する
         def show_error_init(message):
@@ -200,9 +205,7 @@ def main():
                     ]
                 )
             )
-            pause_button = ft.ElevatedButton(
-                text="一時停止", on_click=lambda e: toggle_pause(pause_button, page), color=ft.colors.PINK
-            )
+
             page.add(
                 ft.Row(
                     [
@@ -212,10 +215,11 @@ def main():
                             on_click=lambda e: reset_chart(chart, least_speaker_text, page),
                         ),
                         ft.ElevatedButton(text="会議終了", on_click=lambda e: finish_meeting()),
+                        least_speaker_text,
                     ]
                 )
             )
-            page.add(ft.Row([least_speaker_text]))
+            # page.add(ft.Row([least_speaker_text]))
 
             page.update()
             start_auto_update(chart)
@@ -223,7 +227,10 @@ def main():
         def start_auto_update(chart):
             def auto_update():
                 while True:
-                    time.sleep(5)  # 5秒ごとに実行
+                    if manual_record_toggle.value:
+                        time.sleep(1)  # 1秒ごとに実行
+                    else:
+                        time.sleep(5)
                     if app_state.auto_update_running:
                         update_chart(chart, least_speaker_text, page, manual_record_toggle.value)
 
@@ -339,6 +346,7 @@ def main():
 
         def toggle_recording(index):
             def handler(e):
+
                 invisible_error()
                 recording_state = recording_states[index]
                 if recording_state is False:
@@ -382,17 +390,15 @@ def main():
 
         # UI更新用キューを作成
         app_state.ui_queue = queue.Queue()
-        description_text = ft.Text("話者の人数を選択してください:")
 
         def on_speaker_count_change(e):
-            global description_text
             if speaker_count.value == "-":
                 centered_container = create_centered_container(
                     [
                         ft.Text("手動記録モード:"),
                         manual_record_toggle,
                         ft.Container(height=10),
-                        description_text,
+                        app_state.description_text,
                         speaker_count,
                         start_button,
                         error_message,
@@ -405,8 +411,10 @@ def main():
                 speaker_count.visible = False
 
                 if manual_record_toggle.value:
+                    start_button.visible = True
                     # 手動モード
-                    description_text = ft.Text("それぞれの話者の名前を入力してください:")
+                    pause_button.visible = False
+                    app_state.description_text = ft.Text("それぞれの話者の名前を入力してください:")
                     MySpeakerDiarization.register_speaker_num(num_speakers)
 
                     name_and_record_fields = create_name_and_record_fields(
@@ -419,7 +427,7 @@ def main():
                     )
 
                     centered_container = create_centered_container(
-                        [ft.Text("手動記録モード:"), ft.Container(height=10), description_text, speaker_count]
+                        [ft.Text("手動記録モード:"), ft.Container(height=10), app_state.description_text, speaker_count]
                         + name_and_record_fields
                         + [start_button]
                         + [error_message]
@@ -436,7 +444,7 @@ def main():
                     # UI更新スレッドを開始
                     threading.Thread(target=ui_update_thread, daemon=True).start()
 
-                    description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
+                    app_state.description_text = ft.Text("それぞれの話者の名前を入力し、声を登録してください:")
                     MySpeakerDiarization.register_speaker_num(num_speakers)
 
                     log_file = "subprocess_log.txt"
@@ -482,7 +490,7 @@ def main():
                         manual_record_toggle.value,
                     )
                     centered_container = create_centered_container(
-                        [description_text, speaker_count]
+                        [app_state.description_text, speaker_count]
                         + name_and_record_fields
                         + [start_button]
                         + [error_message]
@@ -505,7 +513,7 @@ def main():
                     page.update()
                     break
 
-        start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
+        start_button = ft.ElevatedButton(text="開始", on_click=start_recording, visible=False)
         error_message = ft.Text("", color=ft.colors.RED, visible=False)
         speaker_count.on_change = on_speaker_count_change
 
@@ -514,7 +522,7 @@ def main():
                 ft.Text("手動記録モード:"),
                 manual_record_toggle,
                 ft.Container(height=10),
-                description_text,
+                app_state.description_text,
                 speaker_count,
                 start_button,
                 error_message,
