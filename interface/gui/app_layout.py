@@ -339,6 +339,7 @@ def main():
 
         def toggle_recording(index):
             def handler(e):
+
                 invisible_error()
                 recording_state = recording_states[index]
                 if recording_state is False:
@@ -405,6 +406,7 @@ def main():
                 speaker_count.visible = False
 
                 if manual_record_toggle.value:
+                    start_button.visible = True
                     # 手動モード
                     description_text = ft.Text("それぞれの話者の名前を入力してください:")
                     MySpeakerDiarization.register_speaker_num(num_speakers)
@@ -505,7 +507,7 @@ def main():
                     page.update()
                     break
 
-        start_button = ft.ElevatedButton(text="開始", on_click=start_recording)
+        start_button = ft.ElevatedButton(text="開始", on_click=start_recording, visible=False)
         error_message = ft.Text("", color=ft.colors.RED, visible=False)
         speaker_count.on_change = on_speaker_count_change
 
