@@ -23,3 +23,8 @@ python3 interface/main.py
 
 # デモ動画
 [デモ動画はこちらにあります。](https://drive.google.com/file/d/1nISVwaqCVOp8dku06WlJtqgmqzTELS-S/view)
+
+# セットアップ
+```bash
+pip install -r requirements.txt
+```
